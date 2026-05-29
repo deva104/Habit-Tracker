@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HabitTrack — Analytics</title>
+  <link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Cabinet+Grotesk:wght@400;500;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:       #060910;
+      --surface:  #0f1520;
+      --surface2: #141b28;
+      --surface3: #1a2235;
+      --border:   rgba(255,255,255,0.07);
+      --border2:  rgba(255,255,255,0.13);
+      --accent:   #4ade80;
+      --accent2:  #22c55e;
+      --accentd:  #16a34a;
+      --blue:     #3b82f6;
+      --blue2:    #60a5fa;
+      --amber:    #f59e0b;
+      --red:      #f87171;
+      --purple:   #a78bfa;
+      --text:     #f1f5f9;
+      --muted:    #64748b;
+      --muted2:   #94a3b8;
+      --sidebar-w: 240px;
+    }
+    body { font-family: 'Cabinet Grotesk', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* Loader */
+    #loader { position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;z-index:999;transition:opacity 0.5s,visibility 0.5s; }
+    #loader.gone { opacity:0;visibility:hidden; }
+    .loader-logo { display:flex;align-items:center;gap:10px;font-family:'Clash Display',sans-serif;font-size:22px;font-weight:700; }
+    .loader-logo .lmark { width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--accent2),var(--accentd));display:grid;place-items:center;font-size:18px; }
+    .loader-logo em { color:var(--accent);font-style:normal; }
+    .loader-bar { width:200px;height:3px;background:var(--surface3);border-radius:99px;overflow:hidden; }
+    .loader-fill { height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:99px;animation:loadFill 1s ease-in-out both; }
+    @keyframes loadFill { from{width:0} to{width:100%} }
+
+    /* Sidebar */
+    .sidebar { position:fixed;left:0;top:0;bottom:0;width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:50; }
+    .sb-logo { display:flex;align-items:center;gap:11px;padding:22px;border-bottom:1px solid var(--border); }
+    .sb-logo .mark { width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--accent2),var(--accentd));display:grid;place-items:center; }
+    .sb-logo .mark svg { width:18px;height:18px;stroke:white;stroke-width:2.5;fill:none; }
+    .sb-logo .name { font-family:'Clash Display',sans-serif;font-size:19px;font-weight:700;letter-spacing:-0.3px; }
+    .sb-logo .name em { color:var(--accent);font-style:normal; }
+    .sb-nav { flex:1;padding:14px 12px;display:flex;flex-direction:column;gap:2px;overflow-y:auto; }
+    .nav-sec { font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);padding:10px 10px 6px;margin-top:4px; }
+    .nav-link { display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:10px;color:var(--muted2);font-size:14px;font-weight:700;cursor:pointer;text-decoration:none;transition:all 0.15s;position:relative;border:1px solid transparent; }
+    .nav-link:hover { background:var(--surface2);color:var(--text); }
+    .nav-link.active { background:rgba(74,222,128,0.1);color:var(--accent);border-color:rgba(74,222,128,0.15); }
+    .nav-link.active::before { content:'';position:absolute;left:-1px;top:20%;bottom:20%;width:3px;background:var(--accent2);border-radius:0 3px 3px 0; }
+    .nav-icon { font-size:16px;width:20px;text-align:center;flex-shrink:0; }
+    .sb-bottom { padding:14px 12px;border-top:1px solid var(--border); }
+    .user-card { display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;transition:background 0.15s; }
+    .user-card:hover { background:var(--surface3); }
+    .avatar { width:32px;height:32px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,#1e3a5f,var(--accentd));display:grid;place-items:center;font-weight:800;font-size:12px;border:2px solid rgba(74,222,128,0.2); }
+    .uname { font-size:13px;font-weight:700;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+    .logout-ico { font-size:14px;color:var(--muted);transition:color 0.15s; }
+    .user-card:hover .logout-ico { color:var(--red); }
+
+    /* Main */
+    .main { margin-left:var(--sidebar-w);min-height:100vh; }
+    .topbar { display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:60px;background:rgba(6,9,16,0.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:40; }
+    .topbar h1 { font-family:'Clash Display',sans-serif;font-size:18px;font-weight:600;letter-spacing:-0.3px; }
+    .topbar .sub { font-size:11px;color:var(--muted);margin-top:1px; }
+
+    /* Range selector */
+    .range-tabs { display:flex;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:3px;gap:2px; }
+    .rtab { padding:7px 14px;border:none;border-radius:7px;background:transparent;color:var(--muted);font-family:'Cabinet Grotesk',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.15s; }
+    .rtab.active { background:linear-gradient(135deg,rgba(74,222,128,0.15),rgba(74,222,128,0.08));color:var(--accent);border:1px solid rgba(74,222,128,0.2); }
+    .rtab:hover:not(.active) { color:var(--text); }
+
+    /* Content */
+    .content { padding:24px 28px;display:flex;flex-direction:column;gap:18px; }
+
+    /* Section title */
+    .sec-title { font-family:'Clash Display',sans-serif;font-size:15px;font-weight:600;letter-spacing:-0.2px;margin-bottom:14px;display:flex;align-items:center;gap:10px; }
+    .sec-title::after { content:'';flex:1;height:1px;background:var(--border); }
+
+    /* Card */
+    .card { background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 22px; }
+    .card-title { font-family:'Clash Display',sans-serif;font-size:14px;font-weight:600;margin-bottom:16px;color:var(--text); }
+
+    /* ── Overview KPIs ── */
+    .kpi-grid { display:grid;grid-template-columns:repeat(5,1fr);gap:12px; }
+    .kpi { background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px;transition:transform 0.15s,border-color 0.15s; }
+    .kpi:hover { transform:translateY(-2px);border-color:var(--border2); }
+    .kpi-label { font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;color:var(--muted);margin-bottom:7px; }
+    .kpi-val { font-family:'Clash Display',sans-serif;font-size:30px;font-weight:700;line-height:1;margin-bottom:4px; }
+    .kpi-sub { font-size:12px;color:var(--muted2); }
+    .kpi-val.green { color:var(--accent2); }
+    .kpi-val.amber { color:var(--amber); }
+    .kpi-val.blue  { color:var(--blue2); }
+    .kpi-val.purple{ color:var(--purple); }
+    .kpi-val.red   { color:var(--red); }
+
+    /* ── Charts row ── */
+    .charts-row { display:grid;grid-template-columns:1fr 1fr;gap:14px; }
+    .chart-wrap { height:200px; }
+    .chart-wrap-tall { height:240px; }
+
+    /* ── Habit leaderboard ── */
+    .leaderboard { display:flex;flex-direction:column;gap:8px; }
+    .lb-row { display:flex;align-items:center;gap:14px;padding:12px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;transition:border-color 0.15s,transform 0.15s; }
+    .lb-row:hover { border-color:var(--border2);transform:translateX(3px); }
+    .lb-rank { font-family:'Clash Display',sans-serif;font-size:18px;font-weight:700;width:28px;text-align:center;flex-shrink:0; }
+    .lb-rank.gold   { color:#f59e0b; }
+    .lb-rank.silver { color:#94a3b8; }
+    .lb-rank.bronze { color:#cd7c4a; }
+    .lb-rank.normal { color:var(--muted); }
+    .lb-name { flex:1;font-size:14px;font-weight:700; }
+    .lb-streak { display:flex;align-items:center;gap:5px;font-size:13px;font-weight:700;color:var(--amber);background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);padding:3px 10px;border-radius:99px; }
+    .lb-bar-wrap { width:140px; }
+    .lb-bar-track { height:6px;background:rgba(255,255,255,0.07);border-radius:3px;overflow:hidden; }
+    .lb-bar-fill { height:100%;border-radius:3px;transition:width 0.6s cubic-bezier(0.16,1,0.3,1); }
+    .lb-pct { font-family:'Clash Display',sans-serif;font-size:14px;font-weight:700;min-width:40px;text-align:right;color:var(--muted2); }
+    .lb-record { font-size:11px;color:var(--muted);display:flex;align-items:center;gap:4px; }
+
+    /* ── Best day of week ── */
+    .dow-grid { display:grid;grid-template-columns:repeat(7,1fr);gap:8px; }
+    .dow-item { background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 8px;text-align:center;transition:border-color 0.15s,transform 0.15s; }
+    .dow-item.best { border-color:rgba(74,222,128,0.3);background:rgba(74,222,128,0.06); }
+    .dow-item:hover { transform:translateY(-2px); }
+    .dow-name { font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);margin-bottom:8px; }
+    .dow-bar-wrap { height:60px;display:flex;align-items:flex-end;justify-content:center;margin-bottom:6px; }
+    .dow-bar { width:24px;border-radius:4px 4px 0 0;transition:height 0.6s cubic-bezier(0.16,1,0.3,1);min-height:3px; }
+    .dow-pct { font-family:'Clash Display',sans-serif;font-size:13px;font-weight:700; }
+    .dow-item.best .dow-name { color:var(--accent); }
+    .dow-item.best .dow-pct  { color:var(--accent); }
+
+    /* ── Consistency ── */
+    .consistency-list { display:flex;flex-direction:column;gap:10px; }
+    .con-row { display:flex;align-items:center;gap:14px; }
+    .con-name { width:150px;font-size:13px;font-weight:700;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+    .con-track { flex:1;height:8px;background:rgba(255,255,255,0.06);border-radius:4px;overflow:hidden; }
+    .con-fill { height:100%;border-radius:4px;transition:width 0.6s cubic-bezier(0.16,1,0.3,1); }
+    .con-pct { font-family:'Clash Display',sans-serif;font-size:13px;font-weight:700;min-width:42px;text-align:right; }
+    .con-streak { font-size:11px;color:var(--muted);min-width:60px;text-align:right; }
+
+    /* ── Personal records ── */
+    .records-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px; }
+    .rec-card { background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;transition:transform 0.15s,border-color 0.15s; }
+    .rec-card:hover { transform:translateY(-2px);border-color:var(--border2); }
+    .rec-habit { font-size:12px;font-weight:700;color:var(--muted2);margin-bottom:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+    .rec-val { font-family:'Clash Display',sans-serif;font-size:24px;font-weight:700;color:var(--amber); }
+    .rec-label { font-size:11px;color:var(--muted);margin-top:2px; }
+
+    /* Empty state */
+    .empty { text-align:center;padding:48px;color:var(--muted);font-size:14px; }
+    .empty .big { font-size:36px;margin-bottom:12px; }
+
+    @media (max-width:1100px) { .kpi-grid { grid-template-columns:repeat(3,1fr); } }
+    @media (max-width:900px)  { .charts-row { grid-template-columns:1fr; } .kpi-grid { grid-template-columns:repeat(2,1fr); } }
+    @media (max-width:640px)  { .sidebar{display:none} .main{margin-left:0} .content{padding:16px} .dow-grid{grid-template-columns:repeat(4,1fr)} }
+  </style>
+</head>
+<body>
+
+<div id="loader">
+  <div class="loader-logo"><div class="lmark">✓</div>Habit<em>Track</em></div>
+  <div class="loader-bar"><div class="loader-fill"></div></div>
+</div>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="sb-logo">
+    <div class="mark"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+    <div class="name">Habit<em>Track</em></div>
+  </div>
+  <nav class="sb-nav">
+    <div class="nav-sec">Main</div>
+    <a class="nav-link" href="dashboard.html"><span class="nav-icon">🏠</span> Dashboard</a>
+    <a class="nav-link active"><span class="nav-icon">📊</span> Analytics</a>
+    <div class="nav-sec">Tools</div>
+    <a class="nav-link" style="opacity:0.4;pointer-events:none"><span class="nav-icon">📤</span> Export <span style="margin-left:auto;background:var(--accentd);color:white;font-size:10px;font-weight:800;padding:2px 7px;border-radius:99px;">Soon</span></a>
+    <a class="nav-link" onclick="doLogout()"><span class="nav-icon">↩</span> Sign Out</a>
+  </nav>
+  <div class="sb-bottom">
+    <div class="user-card" onclick="doLogout()">
+      <div class="avatar" id="sb-av">?</div>
+      <div class="uname" id="sb-nm">...</div>
+      <div class="logout-ico">↩</div>
+    </div>
+  </div>
+</aside>
+
+<!-- Main -->
+<div class="main">
+  <div class="topbar">
+    <div>
+      <h1>Analytics</h1>
+      <div class="sub" id="tb-sub">Loading…</div>
+    </div>
+    <div class="range-tabs">
+      <button class="rtab active" onclick="setRange(7,this)">7 Days</button>
+      <button class="rtab" onclick="setRange(30,this)">30 Days</button>
+      <button class="rtab" onclick="setRange(90,this)">90 Days</button>
+      <button class="rtab" onclick="setRange(365,this)">1 Year</button>
+      <button class="rtab" onclick="setRange(0,this)">All Time</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- KPIs -->
+    <div class="kpi-grid" id="kpi-grid">
+      <div class="kpi"><div class="kpi-label">Overall Rate</div><div class="kpi-val green" id="k-overall">—</div><div class="kpi-sub">habits completed</div></div>
+      <div class="kpi"><div class="kpi-label">Best Streak</div><div class="kpi-val amber" id="k-streak">—</div><div class="kpi-sub" id="k-streak-habit">days in a row</div></div>
+      <div class="kpi"><div class="kpi-label">Perfect Days</div><div class="kpi-val green" id="k-perfect">—</div><div class="kpi-sub">100% completion</div></div>
+      <div class="kpi"><div class="kpi-label">Total Checkmarks</div><div class="kpi-val blue" id="k-total">—</div><div class="kpi-sub">habits done</div></div>
+      <div class="kpi"><div class="kpi-label">Active Habits</div><div class="kpi-val purple" id="k-habits">—</div><div class="kpi-sub">being tracked</div></div>
+    </div>
+
+    <!-- Charts row -->
+    <div class="charts-row">
+      <div class="card">
+        <div class="card-title" id="trend-title">Completion Trend</div>
+        <div class="chart-wrap"><canvas id="trend-chart"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Habit Completion Breakdown</div>
+        <div class="chart-wrap"><canvas id="bar-chart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Best day of week -->
+    <div class="card">
+      <div class="card-title">Best Day of the Week</div>
+      <div class="dow-grid" id="dow-grid"></div>
+    </div>
+
+    <!-- Habit Leaderboard -->
+    <div class="card">
+      <div class="card-title">Habit Leaderboard — Ranked by Completion</div>
+      <div class="leaderboard" id="leaderboard"></div>
+    </div>
+
+    <!-- Consistency -->
+    <div class="card">
+      <div class="card-title">Consistency Score <span style="font-size:12px;font-weight:400;color:var(--muted);margin-left:6px;">how regularly each habit is done (not just total count)</span></div>
+      <div class="consistency-list" id="consistency-list"></div>
+    </div>
+
+    <!-- Personal Records -->
+    <div class="card">
+      <div class="card-title">🏆 Personal Records — Longest Streak Ever</div>
+      <div class="records-grid" id="records-grid"></div>
+    </div>
+
+  </div>
+</div>
+
+<script type="module">
+import { auth, db } from '../js/firebase.js';
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+let habits = [], completions = {}, rangeDays = 7;
+let trendChart = null, barChart = null;
+
+const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const DAY_NAMES   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+function fmt(d) { return d.toISOString().slice(0,10); }
+function addDays(d,n) { const r=new Date(d); r.setDate(r.getDate()+n); return r; }
+function today() { return fmt(new Date()); }
+
+// -- Auth --
+onAuthStateChanged(auth, u => {
+  if (!u) { location.replace('login.html'); return; }
+  const nm = u.displayName || u.email.split('@')[0];
+  document.getElementById('sb-av').textContent = nm.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  document.getElementById('sb-nm').textContent = nm;
+
+  onSnapshot(doc(db,'users',u.uid), snap => {
+    if (!snap.exists()) { location.replace('dashboard.html'); return; }
+    const d = snap.data();
+    habits      = d.habits || [];
+    completions = d.completions || {};
+    renderAll();
+    setTimeout(()=>document.getElementById('loader').classList.add('gone'), 600);
+  });
+});
+
+// -- Range --
+window.setRange = function(days, btn) {
+  rangeDays = days;
+  document.querySelectorAll('.rtab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  renderAll();
+};
+
+// -- Get days in range --
+function getRangeDays() {
+  const now = new Date();
+  if (rangeDays === 0) {
+    // All time - find earliest completion
+    const keys = Object.keys(completions).filter(k=>completions[k]);
+    if (!keys.length) return [now];
+    const dates = keys.map(k=>k.split('_')[1]).filter(Boolean).sort();
+    const earliest = new Date(dates[0]);
+    const days = [];
+    let d = new Date(earliest);
+    while(fmt(d) <= today()) { days.push(new Date(d)); d=addDays(d,1); }
+    return days;
+  }
+  return Array.from({length: rangeDays}, (_,i) => addDays(now, -(rangeDays-1-i)));
+}
+
+function getRangeLabel() {
+  if (rangeDays === 7)   return 'Last 7 Days';
+  if (rangeDays === 30)  return 'Last 30 Days';
+  if (rangeDays === 90)  return 'Last 90 Days';
+  if (rangeDays === 365) return 'Last 365 Days';
+  return 'All Time';
+}
+
+// -- Render All --
+function renderAll() {
+  document.getElementById('tb-sub').textContent = getRangeLabel() + ' ? ' + new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  renderKPIs();
+  renderTrendChart();
+  renderBarChart();
+  renderDOW();
+  renderLeaderboard();
+  renderConsistency();
+  renderRecords();
+}
+
+// -- KPIs --
+function renderKPIs() {
+  const days = getRangeDays();
+  let totalDone=0, totalPossible=days.length*habits.length, perfectDays=0;
+
+  days.forEach(d => {
+    const done = habits.filter(h=>completions[`${h.id}_${fmt(d)}`]).length;
+    totalDone += done;
+    if(habits.length && done === habits.length) perfectDays++;
+  });
+
+  const overallPct = totalPossible ? Math.round(totalDone/totalPossible*100) : 0;
+  document.getElementById('k-overall').textContent  = overallPct+'%';
+  document.getElementById('k-perfect').textContent  = perfectDays;
+  document.getElementById('k-total').textContent    = totalDone.toLocaleString();
+  document.getElementById('k-habits').textContent   = habits.length;
+
+  // Best current streak across all habits
+  let bestStreak=0, bestHabit='';
+  habits.forEach(h => {
+    let streak=0, d=new Date();
+    while(completions[`${h.id}_${fmt(d)}`]) { streak++; d=addDays(d,-1); }
+    if(streak>bestStreak) { bestStreak=streak; bestHabit=h.name; }
+  });
+  document.getElementById('k-streak').textContent       = bestStreak;
+  document.getElementById('k-streak-habit').textContent = bestStreak ? `fire ${bestHabit}` : 'days in a row';
+}
+
+// -- Trend Chart --
+function renderTrendChart() {
+  const days = getRangeDays();
+  let labels=[], data=[];
+
+  if (rangeDays <= 30 || rangeDays === 0) {
+    // Daily points
+    days.forEach(d => {
+      labels.push(d.toLocaleDateString('en-IN',{day:'numeric',month:'short'}));
+      const done = habits.filter(h=>completions[`${h.id}_${fmt(d)}`]).length;
+      data.push(habits.length ? Math.round(done/habits.length*100) : 0);
+    });
+  } else {
+    // Weekly averages for 90d/365d
+    for(let i=0;i<days.length;i+=7) {
+      const week = days.slice(i, i+7);
+      let wd=0, wt=week.length*habits.length;
+      week.forEach(d => habits.forEach(h=>{ if(completions[`${h.id}_${fmt(d)}`]) wd++; }));
+      labels.push(week[0].toLocaleDateString('en-IN',{day:'numeric',month:'short'}));
+      data.push(wt ? Math.round(wd/wt*100) : 0);
+    }
+  }
+
+  document.getElementById('trend-title').textContent = getRangeLabel()+' Completion Trend';
+
+  if (trendChart) { trendChart.data.labels=labels; trendChart.data.datasets[0].data=data; trendChart.update('none'); return; }
+
+  trendChart = new Chart(document.getElementById('trend-chart').getContext('2d'), {
+    type:'line',
+    data:{ labels, datasets:[{
+      data,
+      borderColor:'#22c55e',
+      backgroundColor: ctx => {
+        const g=ctx.chart.ctx.createLinearGradient(0,0,0,200);
+        g.addColorStop(0,'rgba(34,197,94,0.2)'); g.addColorStop(1,'rgba(34,197,94,0)'); return g;
+      },
+      borderWidth:2.5, pointBackgroundColor:'#22c55e', pointRadius:3, pointHoverRadius:6,
+      tension:0.4, fill:true
+    }]},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>' '+c.raw+'%'}} },
+      scales:{
+        x:{ grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#64748b',font:{size:10},maxTicksLimit:10} },
+        y:{ min:0,max:100, grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#64748b',font:{size:10},callback:v=>v+'%'} }
+      }
+    }
+  });
+}
+
+// -- Bar Chart (per habit) --
+function renderBarChart() {
+  const days = getRangeDays();
+  const labels = habits.map(h=>h.name.length>12?h.name.slice(0,12)+'...':h.name);
+  const data   = habits.map(h => {
+    const done = days.filter(d=>completions[`${h.id}_${fmt(d)}`]).length;
+    return days.length ? Math.round(done/days.length*100) : 0;
+  });
+
+  const colors = data.map(v => v>=80?'rgba(74,222,128,0.8)': v>=50?'rgba(74,222,128,0.5)': v>=25?'rgba(245,158,11,0.6)':'rgba(248,113,113,0.6)');
+
+  if (barChart) { barChart.data.labels=labels; barChart.data.datasets[0].data=data; barChart.data.datasets[0].backgroundColor=colors; barChart.update('none'); return; }
+
+  barChart = new Chart(document.getElementById('bar-chart').getContext('2d'), {
+    type:'bar',
+    data:{ labels, datasets:[{ data, backgroundColor:colors, borderRadius:6, borderSkipped:false }]},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>' '+c.raw+'%'}} },
+      scales:{
+        x:{ grid:{display:false}, ticks:{color:'#64748b',font:{size:10}} },
+        y:{ min:0,max:100, grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#64748b',font:{size:10},callback:v=>v+'%'} }
+      }
+    }
+  });
+}
+
+// -- Best Day of Week --
+function renderDOW() {
+  const days = getRangeDays();
+  const dowTotals = Array(7).fill(0), dowCounts = Array(7).fill(0);
+
+  days.forEach(d => {
+    const dow = d.getDay();
+    const done = habits.filter(h=>completions[`${h.id}_${fmt(d)}`]).length;
+    dowTotals[dow] += habits.length ? done/habits.length*100 : 0;
+    dowCounts[dow]++;
+  });
+
+  const dowAvg = dowTotals.map((t,i) => dowCounts[i] ? Math.round(t/dowCounts[i]) : 0);
+  const maxDow = Math.max(...dowAvg);
+  const bestDow = dowAvg.indexOf(maxDow);
+
+  const grid = document.getElementById('dow-grid');
+  grid.innerHTML = DAY_NAMES.map((name,i) => {
+    const pct = dowAvg[i];
+    const isBest = i===bestDow && pct>0;
+    const barH = maxDow ? Math.max(4, Math.round(pct/maxDow*60)) : 4;
+    const barColor = isBest ? 'var(--accent2)' : pct>=50 ? 'var(--blue)' : 'var(--muted)';
+    return `<div class="dow-item ${isBest?'best':''}">
+      <div class="dow-name">${name}</div>
+      <div class="dow-bar-wrap"><div class="dow-bar" style="height:${barH}px;background:${barColor}"></div></div>
+      <div class="dow-pct">${pct}%</div>
+    </div>`;
+  }).join('');
+}
+
+// -- Leaderboard --
+function renderLeaderboard() {
+  const days = getRangeDays();
+  const lb = document.getElementById('leaderboard');
+
+  if (!habits.length) { lb.innerHTML=`<div class="empty"><div class="big">[clipboard]</div>No habits yet. Add some from the dashboard.</div>`; return; }
+
+  const ranked = habits.map(h => {
+    const done  = days.filter(d=>completions[`${h.id}_${fmt(d)}`]).length;
+    const pct   = days.length ? Math.round(done/days.length*100) : 0;
+    let streak=0, sd=new Date();
+    while(completions[`${h.id}_${fmt(sd)}`]) { streak++; sd=addDays(sd,-1); }
+    return { name:h.name, done, pct, streak };
+  }).sort((a,b)=>b.pct-a.pct);
+
+  const maxPct = ranked[0]?.pct || 1;
+
+  lb.innerHTML = ranked.map((h,i) => {
+    const rankClass = i===0?'gold': i===1?'silver': i===2?'bronze':'normal';
+    const rankLabel = i===0?'#1': i===1?'#2': i===2?'#3': `#${i+1}`;
+    const barColor  = h.pct>=80?'var(--accent2)': h.pct>=50?'var(--blue)': h.pct>=25?'var(--amber)':'var(--red)';
+    const barW      = maxPct ? Math.round(h.pct/maxPct*100) : 0;
+    return `<div class="lb-row">
+      <div class="lb-rank ${rankClass}">${rankLabel}</div>
+      <div class="lb-name">${h.name}</div>
+      ${h.streak>0?`<div class="lb-streak">fire ${h.streak}d</div>`:'<div style="width:60px"></div>'}
+      <div class="lb-bar-wrap">
+        <div class="lb-bar-track"><div class="lb-bar-fill" style="width:${barW}%;background:${barColor}"></div></div>
+      </div>
+      <div class="lb-pct">${h.pct}%</div>
+    </div>`;
+  }).join('');
+}
+
+// -- Consistency Score --
+function renderConsistency() {
+  const days = getRangeDays();
+  const list = document.getElementById('consistency-list');
+  if(!habits.length) { list.innerHTML=''; return; }
+
+  // Consistency = longest run / total days (penalises gaps)
+  const scored = habits.map(h => {
+    let done=0, longestRun=0, currentRun=0;
+    days.forEach(d => {
+      if(completions[`${h.id}_${fmt(d)}`]) { done++; currentRun++; longestRun=Math.max(longestRun,currentRun); }
+      else currentRun=0;
+    });
+    const pct       = days.length ? Math.round(done/days.length*100) : 0;
+    const consistency = days.length ? Math.round(longestRun/days.length*100) : 0;
+    return { name:h.name, pct, consistency, longestRun };
+  }).sort((a,b)=>b.consistency-a.consistency);
+
+  list.innerHTML = scored.map(h => {
+    const color = h.consistency>=70?'var(--accent2)': h.consistency>=40?'var(--blue)': h.consistency>=20?'var(--amber)':'var(--red)';
+    return `<div class="con-row">
+      <div class="con-name" title="${h.name}">${h.name}</div>
+      <div class="con-track"><div class="con-fill" style="width:${h.consistency}%;background:${color}"></div></div>
+      <div class="con-pct" style="color:${color}">${h.consistency}%</div>
+      <div class="con-streak">best run: ${h.longestRun}d</div>
+    </div>`;
+  }).join('');
+}
+
+// -- Personal Records --
+function renderRecords() {
+  const grid = document.getElementById('records-grid');
+  if(!habits.length) { grid.innerHTML=''; return; }
+
+  // Find longest EVER streak per habit (scan all completions)
+  const records = habits.map(h => {
+    const keys = Object.keys(completions)
+      .filter(k=>k.startsWith(h.id+'_') && completions[k])
+      .map(k=>k.split('_')[1])
+      .sort();
+
+    let longestEver=0, run=0;
+    for(let i=0;i<keys.length;i++) {
+      if(i===0) { run=1; }
+      else {
+        const prev = new Date(keys[i-1]), curr = new Date(keys[i]);
+        const diff = (curr-prev)/(1000*60*60*24);
+        run = diff===1 ? run+1 : 1;
+      }
+      longestEver = Math.max(longestEver, run);
+    }
+    return { name:h.name, record:longestEver };
+  }).sort((a,b)=>b.record-a.record);
+
+  grid.innerHTML = records.map(h => `
+    <div class="rec-card">
+      <div class="rec-habit">${h.name}</div>
+      <div class="rec-val">${h.record} <span style="font-size:14px;color:var(--muted)">days</span></div>
+      <div class="rec-label">longest streak ever</div>
+    </div>`).join('');
+}
+
+window.doLogout = async function() { await signOut(auth); location.replace('login.html'); };
+</script>
+</body>
+</html>

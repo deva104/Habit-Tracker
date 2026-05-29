@@ -1,0 +1,151 @@
+<!-- Reference: paste sections into dashboard.html -->
+
+<!-- 1. HTML — paste before </body> -->
+<div class="export-overlay" id="export-overlay" onclick="if(event.target===this)closeExportDrawer()"></div>
+<aside class="export-drawer" id="export-drawer" aria-label="Export panel">
+  <div class="export-drawer-head">
+    <h2>Export &amp; Share</h2>
+    <button type="button" class="export-close" onclick="closeExportDrawer()" aria-label="Close">✕</button>
+  </div>
+  <p class="export-drawer-sub">Download your habit history or generate a shareable link.</p>
+
+  <div class="export-section-label">Download</div>
+  <div class="export-btns">
+    <button type="button" class="export-btn" onclick="exportCSV()">
+      <span class="export-btn-icon">📄</span>
+      <span class="export-btn-text"><strong>CSV</strong><small>Spreadsheet-ready</small></span>
+    </button>
+    <button type="button" class="export-btn" onclick="exportExcel()">
+      <span class="export-btn-icon">📊</span>
+      <span class="export-btn-text"><strong>Excel</strong><small>.xls format</small></span>
+    </button>
+    <button type="button" class="export-btn" onclick="exportPDF()">
+      <span class="export-btn-icon">📑</span>
+      <span class="export-btn-text"><strong>PDF</strong><small>Print / save</small></span>
+    </button>
+  </div>
+
+  <div class="export-section-label">Share</div>
+  <p class="export-share-hint">Create a read-only link others can view (no login required).</p>
+  <button type="button" class="export-btn full" onclick="generateShareLink()">
+    <span class="export-btn-icon">🔗</span>
+    <span class="export-btn-text"><strong>Generate share link</strong></span>
+  </button>
+  <div class="share-link-row" id="share-link-row" style="display:none">
+    <input type="text" id="share-link-input" readonly />
+    <button type="button" class="share-copy-btn" onclick="copyShareLink()">Copy</button>
+  </div>
+</aside>
+
+/* 2. CSS */
+.export-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); backdrop-filter:blur(4px); z-index:250; }
+.export-overlay.show { display:block; }
+.export-drawer { position:fixed; top:0; right:0; width:min(400px,100vw); height:100vh; background:var(--surface2); border-left:1px solid var(--border2); z-index:260; padding:28px 24px; transform:translateX(100%); transition:transform 0.35s cubic-bezier(0.16,1,0.3,1); overflow-y:auto; }
+.export-drawer.open { transform:translateX(0); }
+.export-drawer-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+.export-drawer-head h2 { font-family:'Clash Display',sans-serif; font-size:20px; font-weight:700; }
+.export-close { width:32px; height:32px; border:none; border-radius:8px; background:rgba(255,255,255,0.07); color:var(--text); font-size:16px; cursor:pointer; }
+.export-close:hover { background:rgba(255,255,255,0.12); }
+.export-drawer-sub { font-size:13px; color:var(--muted2); margin-bottom:24px; line-height:1.5; }
+.export-section-label { font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:1px; color:var(--muted); margin-bottom:10px; margin-top:8px; }
+.export-btns { display:flex; flex-direction:column; gap:8px; margin-bottom:20px; }
+.export-btn { display:flex; align-items:center; gap:14px; width:100%; padding:14px 16px; border:1px solid var(--border2); border-radius:12px; background:var(--surface); color:var(--text); font-family:'Cabinet Grotesk',sans-serif; cursor:pointer; text-align:left; transition:background 0.15s,border-color 0.15s; }
+.export-btn:hover { background:var(--surface3); border-color:rgba(74,222,128,0.25); }
+.export-btn.full { margin-bottom:12px; }
+.export-btn-icon { font-size:22px; }
+.export-btn-text { display:flex; flex-direction:column; gap:2px; }
+.export-btn-text strong { font-size:14px; font-weight:700; }
+.export-btn-text small { font-size:11px; color:var(--muted); font-weight:500; }
+.export-share-hint { font-size:12px; color:var(--muted); margin-bottom:12px; line-height:1.45; }
+.share-link-row { display:flex; gap:8px; }
+.share-link-row input { flex:1; padding:10px 12px; border-radius:9px; border:1px solid var(--border2); background:rgba(255,255,255,0.05); color:var(--muted2); font-size:12px; font-family:inherit; }
+.share-copy-btn { padding:10px 14px; border:none; border-radius:9px; background:var(--accentd); color:#fff; font-weight:700; font-size:12px; cursor:pointer; white-space:nowrap; }
+.share-copy-btn:hover { background:var(--accent2); }
+
+/* 3. JS */
+window.openExportDrawer = function() {
+  document.getElementById('export-overlay').classList.add('show');
+  document.getElementById('export-drawer').classList.add('open');
+};
+
+window.closeExportDrawer = function() {
+  document.getElementById('export-overlay').classList.remove('show');
+  document.getElementById('export-drawer').classList.remove('open');
+};
+
+function buildExportRows() {
+  const dateSet = new Set();
+  Object.keys(completions).forEach((key) => {
+    const i = key.lastIndexOf('_');
+    if (i > 0) dateSet.add(key.slice(i + 1));
+  });
+  const dates = [...dateSet].sort();
+  const header = ['Date', ...habits.map((h) => h.name)];
+  const rows = [header];
+  dates.forEach((ds) => {
+    rows.push([
+      ds,
+      ...habits.map((h) => (completions[`${h.id}_${ds}`] ? 'Yes' : 'No')),
+    ]);
+  });
+  return rows;
+}
+
+function downloadBlob(content, filename, mime) {
+  const blob = new Blob([content], { type: mime });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+window.exportCSV = function() {
+  if (!habits.length) return showToast('Add habits before exporting');
+  const rows = buildExportRows();
+  const csv = rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+  downloadBlob(csv, `habittrack-${today()}.csv`, 'text/csv;charset=utf-8');
+  showToast('📄 CSV downloaded');
+};
+
+window.exportExcel = function() {
+  if (!habits.length) return showToast('Add habits before exporting');
+  const rows = buildExportRows();
+  const tsv = rows.map((r) => r.join('\t')).join('\n');
+  downloadBlob(tsv, `habittrack-${today()}.xls`, 'application/vnd.ms-excel');
+  showToast('📊 Excel file downloaded');
+};
+
+window.exportPDF = function() {
+  if (!habits.length) return showToast('Add habits before exporting');
+  const rows = buildExportRows();
+  const w = window.open('', '_blank');
+  if (!w) return showToast('Allow popups to export PDF');
+  const tableRows = rows.map((r) => `<tr>${r.map((c) => `<td style="padding:6px 10px;border:1px solid #ccc">${c}</td>`).join('')}</tr>`).join('');
+  const endScript = '<' + '/script>';
+  w.document.write(`<!DOCTYPE html><html><head><title>HabitTrack Export</title></head><body style="font-family:sans-serif;padding:24px"><h1>HabitTrack Export</h1><p>Generated ${today()}</p><table style="border-collapse:collapse;width:100%">${tableRows}</table><script>window.onload=function(){window.print();}${endScript}</body></html>`);
+  w.document.close();
+  showToast('📑 PDF print dialog opened');
+};
+
+window.generateShareLink = async function() {
+  if (!user) return;
+  const ref = doc(db, 'users', user.uid);
+  const snap = await getDoc(ref);
+  let shareId = snap.exists() ? snap.data().shareId : null;
+  if (!shareId) {
+    shareId = user.uid.slice(0, 8) + Date.now().toString(36);
+    await updateDoc(ref, { shareId });
+  }
+  const base = location.href.replace(/[^/]*$/, '');
+  const url = `${base}share.html?id=${shareId}`;
+  document.getElementById('share-link-input').value = url;
+  document.getElementById('share-link-row').style.display = 'flex';
+  showToast('🔗 Share link ready');
+};
+
+window.copyShareLink = function() {
+  const inp = document.getElementById('share-link-input');
+  if (!inp.value) return showToast('Generate a link first');
+  navigator.clipboard.writeText(inp.value).then(() => showToast('✓ Link copied'));
+};
