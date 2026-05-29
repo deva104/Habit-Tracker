@@ -497,13 +497,13 @@
 </div>
 
 <script type="module">
-  import { auth, googleProvider } from './src/js/firebase.js';
+  import { auth, googleProvider } from '../js/firebase.js';
   import {
     signInWithEmailAndPassword, createUserWithEmailAndPassword,
     signInWithPopup, updateProfile, onAuthStateChanged
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-  onAuthStateChanged(auth, u => { if (u) location.replace('./src/pages/dashboard.html'); });
+  onAuthStateChanged(auth, u => { if (u) location.replace('dashboard.html'); });
 
   function err(msg) {
     document.getElementById('error-text').textContent = msg;
@@ -531,7 +531,7 @@
     err(''); setLoading('btn-login', true);
     try {
       await signInWithEmailAndPassword(auth, email, pass);
-      location.replace('./src/pages/dashboard.html');
+      location.replace('dashboard.html');
     } catch(e) {
       setLoading('btn-login', false);
       err(e.code === 'auth/invalid-credential' ? 'Wrong email or password.' : e.message);
@@ -548,7 +548,7 @@
     try {
       const cred = await createUserWithEmailAndPassword(auth, email, pass);
       await updateProfile(cred.user, { displayName: name });
-      location.replace('./src/pages/dashboard.html');
+      location.replace('dashboard.html');
     } catch(e) {
       setLoading('btn-signup', false);
       err(e.code === 'auth/email-already-in-use' ? 'That email is already registered.' : e.message);
@@ -559,7 +559,7 @@
     err('');
     try {
       await signInWithPopup(auth, googleProvider);
-      location.replace('./src/pages/dashboard.html');
+      location.replace('dashboard.html');
     } catch(e) {
       if (e.code !== 'auth/popup-closed-by-user') err(e.message);
     }
