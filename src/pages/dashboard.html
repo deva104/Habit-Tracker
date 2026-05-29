@@ -1,907 +1,958 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard — HabitTrack</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@600;700&family=Cabinet+Grotesk:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HabitTrack — Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Cabinet+Grotesk:wght@400;500;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --bg: #060910;
-      --bg2: #0b0f18;
-      --surface: #0f1520;
+      --bg:       #060910;
+      --surface:  #0f1520;
       --surface2: #141b28;
       --surface3: #1a2235;
-      --border: rgba(255, 255, 255, 0.07);
-      --border2: rgba(255, 255, 255, 0.13);
-      --accent: #4ade80;
-      --accent2: #22c55e;
-      --accentd: #16a34a;
-      --blue: #3b82f6;
-      --amber: #f59e0b;
-      --red: #f87171;
-      --text: #f1f5f9;
-      --muted: #64748b;
-      --muted2: #94a3b8;
-      --error: #f87171;
+      --border:   rgba(255,255,255,0.07);
+      --border2:  rgba(255,255,255,0.13);
+      --accent:   #4ade80;
+      --accent2:  #22c55e;
+      --accentd:  #16a34a;
+      --blue:     #3b82f6;
+      --amber:    #f59e0b;
+      --red:      #f87171;
+      --text:     #f1f5f9;
+      --muted:    #64748b;
+      --muted2:   #94a3b8;
       --sidebar-w: 240px;
     }
-
-    body {
-      font-family: 'Cabinet Grotesk', system-ui, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-    }
-
-    h1, h2, h3, .heading-font {
-      font-family: 'Clash Display', system-ui, sans-serif;
-    }
-
-    /* —— Loading overlay —— */
-    .loader-overlay {
-      position: fixed;
-      inset: 0;
-      z-index: 9999;
-      background: var(--bg);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 28px;
-      transition: opacity 0.4s ease, visibility 0.4s ease;
-    }
-
-    .loader-overlay.hidden {
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
-    }
-
-    .loader-brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .loader-brand .brand-icon {
-      width: 44px;
-      height: 44px;
-      border-radius: 11px;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .loader-brand .brand-icon svg {
-      width: 24px;
-      height: 24px;
-      stroke: #060910;
-      stroke-width: 2.5;
-      fill: none;
-    }
-
-    .loader-brand .brand-text {
-      font-family: 'Clash Display', sans-serif;
-      font-weight: 700;
-      font-size: 1.5rem;
-      letter-spacing: -0.02em;
-    }
-
-    .loader-brand .accent-word { color: var(--accent); }
-
-    .loader-bar-track {
-      width: 200px;
-      height: 3px;
-      background: var(--surface2);
-      border-radius: 3px;
-      overflow: hidden;
-    }
-
-    .loader-bar-fill {
-      height: 100%;
-      width: 0;
-      background: linear-gradient(90deg, var(--accent), var(--accent2));
-      border-radius: 3px;
-      animation: loadBar 1.2s ease-out forwards;
-    }
-
-    @keyframes loadBar {
-      to { width: 100%; }
-    }
-
-    /* —— Sidebar —— */
-    .sidebar {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: var(--sidebar-w);
-      height: 100vh;
-      background: var(--bg2);
-      border-right: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      z-index: 100;
-    }
-
-    .sidebar-logo {
-      padding: 24px 20px 20px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .brand-icon {
-      width: 36px;
-      height: 36px;
-      border-radius: 9px;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-
-    .brand-icon svg {
-      width: 20px;
-      height: 20px;
-      stroke: #060910;
-      stroke-width: 2.5;
-      fill: none;
-    }
-
-    .brand-text {
-      font-family: 'Clash Display', sans-serif;
-      font-weight: 700;
-      font-size: 1.15rem;
-      letter-spacing: -0.02em;
-    }
-
-    .brand-text .accent-word { color: var(--accent); }
-
-    .sidebar-nav {
-      flex: 1;
-      overflow-y: auto;
-      padding: 16px 12px;
-    }
-
-    .nav-section-label {
-      font-size: 0.65rem;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      color: var(--muted);
-      padding: 12px 12px 8px;
-      text-transform: uppercase;
-    }
-
-    .nav-link {
-      position: relative;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 12px;
-      margin-bottom: 4px;
-      border-radius: 10px;
-      color: var(--muted2);
-      text-decoration: none;
-      font-size: 0.9rem;
-      font-weight: 500;
-      transition: background 0.2s, color 0.2s;
-      border: none;
-      background: none;
-      width: 100%;
-      text-align: left;
-      cursor: default;
-      font-family: inherit;
-    }
-
-    .nav-link .nav-icon { font-size: 1rem; width: 22px; text-align: center; flex-shrink: 0; }
-
-    .nav-link .nav-label { flex: 1; }
-
-    .nav-link:not(.disabled):not(.active):hover {
-      background: rgba(255, 255, 255, 0.04);
-      color: var(--text);
-      cursor: pointer;
-    }
-
-    .nav-link.active {
-      background: rgba(74, 222, 128, 0.1);
-      color: var(--accent);
-    }
-
-    .nav-link.active::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 3px;
-      height: 60%;
-      background: var(--accent);
-      border-radius: 0 3px 3px 0;
-    }
-
-    .nav-link.disabled {
-      opacity: 0.55;
-      cursor: not-allowed;
-    }
-
-    .phase-badge {
-      font-size: 0.65rem;
-      font-weight: 600;
-      padding: 3px 8px;
-      border-radius: 20px;
-      background: rgba(74, 222, 128, 0.15);
-      color: var(--accent);
-      white-space: nowrap;
-    }
-
-    .sidebar-user {
-      margin: 12px;
-      padding: 14px;
-      border-radius: 12px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      cursor: pointer;
-      transition: background 0.2s, border-color 0.2s;
-    }
-
-    .sidebar-user:hover {
-      background: var(--surface2);
-      border-color: var(--border2);
-    }
-
-    .user-avatar {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--accentd), #0d2818);
-      border: 2px solid rgba(74, 222, 128, 0.4);
-      box-shadow: 0 0 12px rgba(74, 222, 128, 0.25);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: 'Clash Display', sans-serif;
-      font-weight: 700;
-      font-size: 0.85rem;
-      color: var(--accent);
-      flex-shrink: 0;
-    }
-
-    .user-meta { flex: 1; min-width: 0; }
-
-    .user-name {
-      font-weight: 600;
-      font-size: 0.875rem;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .user-email {
-      font-size: 0.75rem;
-      color: var(--muted);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .user-logout-icon {
-      color: var(--muted);
-      font-size: 1.1rem;
-      flex-shrink: 0;
-    }
-
-    /* —— Main layout —— */
-    .main-wrap {
-      margin-left: var(--sidebar-w);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .topbar {
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 20px 32px;
-      background: rgba(6, 9, 16, 0.85);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
-    }
-
-    .topbar-left h1 {
-      font-size: 1.5rem;
-      font-weight: 700;
-      letter-spacing: -0.03em;
-      margin-bottom: 4px;
-    }
-
-    .topbar-date {
-      font-size: 0.8rem;
-      color: var(--muted);
-    }
-
-    .topbar-right {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .user-chip {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 14px;
-      border-radius: 20px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      font-size: 0.875rem;
-      font-weight: 500;
-    }
-
-    .pulse-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--accent);
-      animation: pulse 2s ease-in-out infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.5); }
-      50% { opacity: 0.85; box-shadow: 0 0 0 6px rgba(74, 222, 128, 0); }
-    }
-
-    .btn-signout {
-      padding: 8px 14px;
-      border-radius: 10px;
-      border: 1px solid rgba(248, 113, 113, 0.3);
-      background: rgba(248, 113, 113, 0.1);
-      color: var(--red);
-      font-family: inherit;
-      font-size: 0.85rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    .btn-signout:hover {
-      background: rgba(248, 113, 113, 0.18);
-    }
-
-    .main-content {
-      padding: 32px;
-      max-width: 1100px;
-      width: 100%;
-    }
-
-    /* —— Animations —— */
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .animate-in {
-      opacity: 0;
-      animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    }
-
-    .delay-0 { animation-delay: 0s; }
-    .delay-1 { animation-delay: 0.1s; }
-    .delay-2 { animation-delay: 0.2s; }
-
-    /* —— Hero card —— */
-    .hero-card {
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 24px;
-      padding: 32px 36px;
-      margin-bottom: 32px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      overflow: hidden;
-      border-left: 4px solid;
-      border-left-color: var(--accent);
-      box-shadow: inset 4px 0 24px -4px rgba(74, 222, 128, 0.35);
-    }
-
-    .hero-orb {
-      position: absolute;
-      top: -40px;
-      right: -40px;
-      width: 180px;
-      height: 180px;
-      background: radial-gradient(circle, rgba(74, 222, 128, 0.25) 0%, transparent 70%);
-      filter: blur(30px);
-      pointer-events: none;
-    }
-
-    .hero-left { position: relative; z-index: 1; flex: 1; }
-
-    .hero-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 6px 12px;
-      margin-bottom: 16px;
-      border-radius: 20px;
-      background: rgba(74, 222, 128, 0.12);
-      border: 1px solid rgba(74, 222, 128, 0.25);
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: var(--accent);
-    }
-
-    .hero-badge .pulse-dot { width: 6px; height: 6px; }
-
-    .hero-title {
-      font-size: clamp(1.5rem, 3vw, 1.85rem);
-      font-weight: 700;
-      letter-spacing: -0.03em;
-      margin-bottom: 10px;
-    }
-
-    .hero-desc {
-      color: var(--muted2);
-      font-size: 0.95rem;
-      line-height: 1.6;
-      max-width: 480px;
-    }
-
-    .hero-check-circle {
-      position: relative;
-      z-index: 1;
-      flex-shrink: 0;
-      width: 100px;
-      height: 100px;
-      border-radius: 50%;
-      border: 3px solid transparent;
-      background:
-        linear-gradient(var(--surface), var(--surface)) padding-box,
-        linear-gradient(135deg, var(--accent), var(--accent2)) border-box;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2.5rem;
-    }
-
-    /* —— Phase grid —— */
-    .phase-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 16px;
-      margin-bottom: 40px;
-    }
-
-    .phase-card {
-      padding: 20px;
-      border-radius: 14px;
-      border: 1px solid var(--border);
-      background: var(--surface);
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      min-height: 140px;
-    }
-
-    .phase-card.done {
-      background: rgba(74, 222, 128, 0.06);
-      border-color: rgba(74, 222, 128, 0.25);
-    }
-
-    .phase-card.active {
-      background: rgba(59, 130, 246, 0.08);
-      border-color: rgba(59, 130, 246, 0.35);
-    }
-
-    .phase-card.pending {
-      background: var(--surface2);
-    }
-
-    .phase-num {
-      width: 36px;
-      height: 36px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: 'Clash Display', sans-serif;
-      font-weight: 700;
-      font-size: 0.95rem;
-    }
-
-    .phase-card.done .phase-num {
-      background: rgba(74, 222, 128, 0.2);
-      color: var(--accent);
-    }
-
-    .phase-card.active .phase-num {
-      background: rgba(59, 130, 246, 0.25);
-      color: var(--blue);
-    }
-
-    .phase-card.pending .phase-num {
-      background: var(--surface3);
-      color: var(--muted);
-    }
-
-    .phase-name {
-      font-weight: 700;
-      font-size: 1rem;
-      font-family: 'Clash Display', sans-serif;
-    }
-
-    .phase-desc {
-      font-size: 0.8rem;
-      color: var(--muted);
-      line-height: 1.5;
-      flex: 1;
-    }
-
-    .status-pill {
-      align-self: flex-start;
-      font-size: 0.7rem;
-      font-weight: 600;
-      padding: 4px 10px;
-      border-radius: 20px;
-      margin-top: auto;
-    }
-
-    .status-pill.done {
-      background: rgba(74, 222, 128, 0.15);
-      color: var(--accent);
-    }
-
-    .status-pill.active {
-      background: rgba(59, 130, 246, 0.15);
-      color: var(--blue);
-    }
-
-    .status-pill.pending {
-      background: var(--surface3);
-      color: var(--muted);
-    }
-
-    /* —— Account section —— */
-    .section-header {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      margin-bottom: 20px;
-    }
-
-    .section-title {
-      font-family: 'Clash Display', sans-serif;
-      font-size: 1.15rem;
-      font-weight: 700;
-      white-space: nowrap;
-    }
-
-    .section-rule {
-      flex: 1;
-      height: 1px;
-      background: var(--border2);
-    }
-
-    .info-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-    }
-
-    .info-card {
-      padding: 20px;
-      border-radius: 14px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-    }
-
-    .info-label {
-      font-size: 0.75rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--muted);
-      margin-bottom: 10px;
-    }
-
-    .info-value {
-      font-size: 1rem;
-      font-weight: 500;
-      word-break: break-all;
-    }
-
-    .info-value.display-name {
-      font-family: 'Clash Display', sans-serif;
-      font-size: 1.35rem;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-    }
-
-    .info-value.uid {
-      font-family: ui-monospace, 'Cascadia Code', monospace;
-      font-size: 0.75rem;
-      color: var(--muted2);
-      line-height: 1.5;
-    }
-
-    .auth-pill {
-      display: inline-flex;
-      margin-top: 10px;
-      padding: 4px 10px;
-      border-radius: 20px;
-      background: rgba(74, 222, 128, 0.12);
-      color: var(--accent);
-      font-size: 0.7rem;
-      font-weight: 600;
-    }
-
-    @media (max-width: 900px) {
-      .info-grid { grid-template-columns: 1fr; }
-    }
-
-    @media (max-width: 639px) {
-      .sidebar { display: none; }
-      .main-wrap { margin-left: 0; }
-      .topbar { padding: 16px 20px; }
-      .main-content { padding: 20px 16px; }
-      .hero-card {
-        flex-direction: column;
-        text-align: center;
-        padding: 24px 20px;
-      }
-      .hero-desc { max-width: none; }
-      .topbar-right .user-chip { display: none; }
+    body { font-family: 'Cabinet Grotesk', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* ── Loader ── */
+    #loader { position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;z-index:999;transition:opacity 0.5s,visibility 0.5s; }
+    #loader.gone { opacity:0;visibility:hidden; }
+    .loader-logo { display:flex;align-items:center;gap:10px;font-family:'Clash Display',sans-serif;font-size:22px;font-weight:700; }
+    .loader-logo .lmark { width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--accent2),var(--accentd));display:grid;place-items:center;font-size:18px; }
+    .loader-logo em { color:var(--accent);font-style:normal; }
+    .loader-bar { width:200px;height:3px;background:var(--surface3);border-radius:99px;overflow:hidden; }
+    .loader-fill { height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:99px;animation:loadFill 1s ease-in-out both; }
+    @keyframes loadFill { from{width:0} to{width:100%} }
+
+    /* ── Sidebar ── */
+    .sidebar { position:fixed;left:0;top:0;bottom:0;width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:50; }
+    .sb-logo { display:flex;align-items:center;gap:11px;padding:22px;border-bottom:1px solid var(--border); }
+    .sb-logo .mark { width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--accent2),var(--accentd));display:grid;place-items:center; }
+    .sb-logo .mark svg { width:18px;height:18px;stroke:white;stroke-width:2.5;fill:none; }
+    .sb-logo .name { font-family:'Clash Display',sans-serif;font-size:19px;font-weight:700;letter-spacing:-0.3px; }
+    .sb-logo .name em { color:var(--accent);font-style:normal; }
+    .sb-nav { flex:1;padding:14px 12px;display:flex;flex-direction:column;gap:2px;overflow-y:auto; }
+    .nav-sec { font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);padding:10px 10px 6px;margin-top:4px; }
+    .nav-link { display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:10px;color:var(--muted2);font-size:14px;font-weight:700;cursor:pointer;text-decoration:none;transition:all 0.15s;position:relative;border:1px solid transparent; }
+    .nav-link:hover { background:var(--surface2);color:var(--text); }
+    .nav-link.active { background:rgba(74,222,128,0.1);color:var(--accent);border-color:rgba(74,222,128,0.15); }
+    .nav-link.active::before { content:'';position:absolute;left:-1px;top:20%;bottom:20%;width:3px;background:var(--accent2);border-radius:0 3px 3px 0; }
+    .nav-icon { font-size:16px;width:20px;text-align:center;flex-shrink:0; }
+    .sb-bottom { padding:14px 12px;border-top:1px solid var(--border); }
+    .user-card { display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;transition:background 0.15s; }
+    .user-card:hover { background:var(--surface3); }
+    .avatar { width:32px;height:32px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,#1e3a5f,var(--accentd));display:grid;place-items:center;font-weight:800;font-size:12px;border:2px solid rgba(74,222,128,0.2); }
+    .uname { font-size:13px;font-weight:700;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+    .logout-ico { font-size:14px;color:var(--muted);transition:color 0.15s; }
+    .user-card:hover .logout-ico { color:var(--red); }
+
+    /* ── Main ── */
+    .main { margin-left:var(--sidebar-w);min-height:100vh; }
+    .topbar { display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:60px;background:rgba(6,9,16,0.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:40; }
+    .topbar-left h1 { font-family:'Clash Display',sans-serif;font-size:18px;font-weight:600;letter-spacing:-0.3px; }
+    .topbar-left .sub { font-size:11px;color:var(--muted);margin-top:1px; }
+    .topbar-right { display:flex;align-items:center;gap:10px; }
+
+    /* View tabs */
+    .view-tabs { display:flex;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:3px;gap:2px; }
+    .vtab { padding:7px 16px;border:none;border-radius:7px;background:transparent;color:var(--muted);font-family:'Cabinet Grotesk',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.15s; }
+    .vtab.active { background:linear-gradient(135deg,rgba(74,222,128,0.15),rgba(74,222,128,0.08));color:var(--accent);border:1px solid rgba(74,222,128,0.2); }
+    .vtab:hover:not(.active) { color:var(--text); }
+
+    .btn-add { display:flex;align-items:center;gap:7px;padding:8px 16px;background:var(--accentd);border:none;border-radius:9px;color:white;font-family:'Cabinet Grotesk',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:background 0.15s,transform 0.12s; }
+    .btn-add:hover { background:var(--accent2);transform:translateY(-1px); }
+
+    /* ── Content ── */
+    .content { padding:24px 28px; }
+
+    /* ── Stats row ── */
+    .stats-row { display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px; }
+    .stat-card { background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;transition:transform 0.15s,border-color 0.15s; }
+    .stat-card:hover { transform:translateY(-2px);border-color:var(--border2); }
+    .stat-label { font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;color:var(--muted);margin-bottom:6px; }
+    .stat-val { font-family:'Clash Display',sans-serif;font-size:28px;font-weight:700;line-height:1;margin-bottom:3px; }
+    .stat-sub { font-size:12px;color:var(--muted2); }
+    .stat-sub.green { color:var(--accent2); }
+    .stat-sub.amber { color:var(--amber); }
+
+    /* ── Chart + info row ── */
+    .chart-row { display:grid;grid-template-columns:1fr 300px;gap:14px;margin-bottom:20px; }
+    .card { background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 22px; }
+    .card-title { font-family:'Clash Display',sans-serif;font-size:14px;font-weight:600;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between; }
+    .chart-wrap { height:170px; }
+
+    .info-stack { display:flex;flex-direction:column;gap:12px; }
+    .info-card { background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;flex:1; }
+    .badge { display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px; }
+    .badge-best { background:rgba(74,222,128,0.1);color:var(--accent);border:1px solid rgba(74,222,128,0.2); }
+    .badge-worst { background:rgba(248,113,113,0.1);color:var(--red);border:1px solid rgba(248,113,113,0.2); }
+    .info-name { font-family:'Clash Display',sans-serif;font-size:19px;font-weight:700; }
+    .info-pct { font-size:12px;color:var(--muted2);margin-top:3px; }
+
+    .day-breakdown { display:flex;flex-direction:column;gap:6px; }
+    .db-item { display:flex;align-items:center;gap:10px;padding:7px 10px;background:rgba(255,255,255,0.02);border-radius:8px; }
+    .db-dot { width:8px;height:8px;border-radius:50%;flex-shrink:0; }
+    .db-label { font-size:12px;color:var(--muted2);flex:1; }
+    .db-count { font-family:'Clash Display',sans-serif;font-size:15px;font-weight:700; }
+
+    /* ── Tracker card ── */
+    .tracker-card { background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:20px; }
+    .tracker-head { display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border); }
+    .tracker-head .title { font-family:'Clash Display',sans-serif;font-size:14px;font-weight:600; }
+    .tracker-head .hint { font-size:12px;color:var(--muted); }
+    .tracker-scroll { overflow-x:auto; }
+
+    /* Nav arrows for week/month */
+    .period-nav { display:flex;align-items:center;gap:8px; }
+    .nav-arrow { width:28px;height:28px;border-radius:7px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-size:14px;cursor:pointer;display:grid;place-items:center;transition:background 0.15s; }
+    .nav-arrow:hover { background:var(--surface3); }
+    .period-label { font-size:13px;font-weight:700;color:var(--muted2);min-width:140px;text-align:center; }
+
+    /* Table */
+    .htable { border-collapse:collapse;width:100%;font-size:13px; }
+    .htable th { padding:8px 6px;text-align:center;font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.3px;white-space:nowrap;border-bottom:1px solid var(--border); }
+    .htable th.col-habit { text-align:left;padding-left:20px;width:160px;min-width:140px; }
+    .htable th.col-total { text-align:right;padding-right:16px;width:100px; }
+    .htable th.day-head { min-width:38px; }
+    .htable th.today-head { color:var(--accent); }
+
+    .hrow td { padding:4px 6px;border-bottom:1px solid rgba(255,255,255,0.03);text-align:center; }
+    .hrow:last-child td { border-bottom:none; }
+    .hrow:hover td { background:rgba(255,255,255,0.02); }
+    .hrow td.col-habit { text-align:left;padding-left:20px; }
+    .hrow td.col-total { text-align:right;padding-right:16px; }
+
+    .habit-name-wrap { display:flex;align-items:center;gap:6px; }
+    .habit-name-text { font-size:13px;font-weight:700;color:var(--text); }
+    .habit-actions { display:none;gap:3px; }
+    .hrow:hover .habit-actions { display:flex; }
+    .hact { background:none;border:none;cursor:pointer;font-size:12px;padding:3px 5px;border-radius:5px;color:var(--muted);transition:all 0.12s; }
+    .hact:hover { background:rgba(255,255,255,0.08);color:var(--text); }
+    .hact.del:hover { color:var(--red); }
+
+    /* Streak chip */
+    .streak-chip { display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:99px;font-size:10px;font-weight:800;background:rgba(245,158,11,0.1);color:var(--amber);border:1px solid rgba(245,158,11,0.2);margin-left:4px; }
+
+    /* Checkbox */
+    .cbox { width:28px;height:28px;border-radius:7px;border:2px solid rgba(255,255,255,0.1);background:transparent;cursor:pointer;display:grid;place-items:center;margin:0 auto;transition:all 0.15s;font-size:13px;color:transparent;user-select:none; }
+    .cbox:hover { border-color:rgba(74,222,128,0.4);background:rgba(74,222,128,0.06); }
+    .cbox.on { background:var(--accentd);border-color:var(--accent2);color:white; }
+    .cbox.today-col { border-color:rgba(74,222,128,0.25); }
+    .cbox.future { cursor: not-allowed; opacity: 0.25; background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.06); }
+
+    /* Total bar */
+    .total-wrap { display:flex;align-items:center;gap:7px;justify-content:flex-end; }
+    .total-track { height:5px;width:52px;background:rgba(255,255,255,0.07);border-radius:3px;overflow:hidden; }
+    .total-fill { height:100%;background:var(--accent2);border-radius:3px;transition:width 0.3s; }
+    .total-num { font-size:11px;font-weight:700;color:var(--muted2);min-width:32px;text-align:right; }
+
+    /* ── Heatmap (yearly) ── */
+    .heatmap-wrap { padding:16px 20px 20px; }
+    .heatmap-months { display:flex;gap:0;margin-bottom:4px;padding-left:24px; }
+    .hm-month { font-size:11px;color:var(--muted);font-weight:700; }
+    .heatmap-body { display:flex;gap:6px; }
+    .hm-days { display:flex;flex-direction:column;gap:3px;padding-top:2px; }
+    .hm-day-label { font-size:10px;color:var(--muted);height:13px;line-height:13px;text-align:right;padding-right:4px; }
+    .heatmap-grid { display:grid;grid-template-rows:repeat(7,13px);grid-auto-flow:column;gap:3px;grid-auto-columns:13px; }
+    .hm-cell { width:13px;height:13px;border-radius:3px;background:rgba(255,255,255,0.05);cursor:pointer;transition:transform 0.1s;position:relative; }
+    .hm-cell:hover { transform:scale(1.3);z-index:2; }
+    .hm-cell.h1 { background:rgba(74,222,128,0.2); }
+    .hm-cell.h2 { background:rgba(74,222,128,0.4); }
+    .hm-cell.h3 { background:rgba(74,222,128,0.65); }
+    .hm-cell.h4 { background:rgba(74,222,128,0.9); }
+    .hm-legend { display:flex;align-items:center;gap:5px;margin-top:10px;font-size:11px;color:var(--muted);padding-left:24px; }
+    .hm-leg-cell { width:13px;height:13px;border-radius:3px; }
+
+    /* Tooltip */
+    .hm-tooltip { position:fixed;background:var(--surface3);border:1px solid var(--border2);border-radius:8px;padding:7px 11px;font-size:12px;pointer-events:none;z-index:100;white-space:nowrap;display:none; }
+
+    /* ── Modal ── */
+    .overlay { display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);backdrop-filter:blur(4px);z-index:200;align-items:center;justify-content:center; }
+    .overlay.show { display:flex; }
+    .modal { background:var(--surface2);border:1px solid var(--border2);border-radius:18px;padding:30px;width:100%;max-width:400px;animation:modalIn 0.25s cubic-bezier(0.16,1,0.3,1) both; }
+    @keyframes modalIn { from{opacity:0;transform:scale(0.94) translateY(12px)} to{opacity:1;transform:scale(1) translateY(0)} }
+    .modal h2 { font-family:'Clash Display',sans-serif;font-size:20px;font-weight:700;margin-bottom:18px; }
+    .modal input { width:100%;background:rgba(255,255,255,0.06);border:1px solid var(--border2);border-radius:10px;padding:11px 14px;color:var(--text);font-family:'Cabinet Grotesk',sans-serif;font-size:15px;outline:none;margin-bottom:14px; }
+    .modal input:focus { border-color:rgba(74,222,128,0.4);box-shadow:0 0 0 3px rgba(74,222,128,0.06); }
+    .modal-btns { display:flex;gap:10px; }
+    .modal-btns button { flex:1;padding:11px;border:none;border-radius:9px;font-family:'Cabinet Grotesk',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:opacity 0.15s; }
+    .btn-cancel { background:rgba(255,255,255,0.07);color:var(--text); }
+    .btn-confirm { background:var(--accentd);color:white; }
+    .btn-cancel:hover,.btn-confirm:hover { opacity:0.85; }
+
+    /* Onboarding overlay */
+    .onboard-overlay { display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(8px);z-index:300;align-items:center;justify-content:center; }
+    .onboard-overlay.show { display:flex; }
+    .onboard-card { background:var(--surface2);border:1px solid var(--border2);border-radius:22px;padding:40px;width:100%;max-width:460px;animation:modalIn 0.3s cubic-bezier(0.16,1,0.3,1) both; }
+    .onboard-card h2 { font-family:'Clash Display',sans-serif;font-size:26px;font-weight:700;letter-spacing:-0.5px;margin-bottom:8px; }
+    .onboard-card h2 em { color:var(--accent);font-style:normal; }
+    .onboard-card p { color:var(--muted2);font-size:14px;margin-bottom:24px;line-height:1.6; }
+    .onboard-label { font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;color:var(--muted);margin-bottom:7px; }
+    .onboard-input { width:100%;background:rgba(255,255,255,0.06);border:1px solid var(--border2);border-radius:10px;padding:11px 14px;color:var(--text);font-family:'Cabinet Grotesk',sans-serif;font-size:15px;outline:none;margin-bottom:20px; }
+    .onboard-input:focus { border-color:rgba(74,222,128,0.4); }
+    .onboard-habits { display:flex;flex-direction:column;gap:8px;margin-bottom:20px;max-height:200px;overflow-y:auto; }
+    .onboard-habit-row { display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.04);border-radius:9px;padding:8px 12px; }
+    .onboard-habit-row span { flex:1;font-size:14px;font-weight:600; }
+    .onboard-habit-row button { background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:2px 5px;border-radius:4px;transition:color 0.12s; }
+    .onboard-habit-row button:hover { color:var(--red); }
+    .onboard-add-row { display:flex;gap:8px; }
+    .onboard-add-row input { flex:1;background:rgba(255,255,255,0.06);border:1px solid var(--border2);border-radius:9px;padding:9px 12px;color:var(--text);font-family:'Cabinet Grotesk',sans-serif;font-size:14px;outline:none; }
+    .onboard-add-row input:focus { border-color:rgba(74,222,128,0.3); }
+    .onboard-add-row button { padding:9px 14px;background:var(--surface3);border:1px solid var(--border2);border-radius:9px;color:var(--text);font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap; }
+    .btn-start { width:100%;padding:13px;background:linear-gradient(135deg,var(--accent2),var(--accentd));border:none;border-radius:10px;color:white;font-family:'Clash Display',sans-serif;font-size:15px;font-weight:600;cursor:pointer;margin-top:8px;transition:opacity 0.15s,transform 0.12s;box-shadow:0 4px 20px rgba(34,197,94,0.25); }
+    .btn-start:hover { opacity:0.9;transform:translateY(-1px); }
+
+    /* Toast */
+    .toast { position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--surface3);border:1px solid var(--border2);border-radius:10px;padding:11px 20px;font-size:14px;font-weight:600;z-index:400;transition:transform 0.3s cubic-bezier(0.16,1,0.3,1);white-space:nowrap;pointer-events:none; }
+    .toast.show { transform:translateX(-50%) translateY(0); }
+
+    @media (max-width:900px) {
+      .stats-row { grid-template-columns:repeat(2,1fr); }
+      .chart-row { grid-template-columns:1fr; }
+    }
+    @media (max-width:640px) {
+      .sidebar { display:none; }
+      .main { margin-left:0; }
+      .content { padding:16px; }
     }
   </style>
 </head>
 <body>
-  <div id="loader" class="loader-overlay" aria-live="polite" aria-busy="true">
-    <div class="loader-brand">
-      <div class="brand-icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
-      </div>
-      <span class="brand-text">Habit<span class="accent-word">Track</span></span>
+
+<!-- Loader -->
+<div id="loader">
+  <div class="loader-logo"><div class="lmark">✓</div>Habit<em>Track</em></div>
+  <div class="loader-bar"><div class="loader-fill"></div></div>
+</div>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="sb-logo">
+    <div class="mark"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+    <div class="name">Habit<em>Track</em></div>
+  </div>
+  <nav class="sb-nav">
+    <div class="nav-sec">Main</div>
+    <a class="nav-link active" aria-current="page"><span class="nav-icon">🏠</span> Dashboard</a>
+    <a class="nav-link" style="opacity:0.4;pointer-events:none"><span class="nav-icon">📊</span> Analytics <span style="margin-left:auto;background:var(--accentd);color:white;font-size:10px;font-weight:800;padding:2px 7px;border-radius:99px;">Soon</span></a>
+    <div class="nav-sec">Tools</div>
+    <a class="nav-link" style="opacity:0.4;pointer-events:none"><span class="nav-icon">📤</span> Export <span style="margin-left:auto;background:var(--accentd);color:white;font-size:10px;font-weight:800;padding:2px 7px;border-radius:99px;">Soon</span></a>
+    <a class="nav-link" onclick="doLogout()"><span class="nav-icon">↩</span> Sign Out</a>
+  </nav>
+  <div class="sb-bottom">
+    <div class="user-card" onclick="doLogout()">
+      <div class="avatar" id="sb-av">?</div>
+      <div class="uname" id="sb-nm">...</div>
+      <div class="logout-ico">↩</div>
     </div>
-    <div class="loader-bar-track">
-      <div class="loader-bar-fill"></div>
+  </div>
+</aside>
+
+<!-- Main -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <h1>Dashboard</h1>
+      <div class="sub" id="tb-date">Loading…</div>
+    </div>
+    <div class="topbar-right">
+      <div class="view-tabs">
+        <button class="vtab active" onclick="setView('daily',this)">Daily</button>
+        <button class="vtab" onclick="setView('weekly',this)">Weekly</button>
+        <button class="vtab" onclick="setView('monthly',this)">Monthly</button>
+        <button class="vtab" onclick="setView('yearly',this)">Yearly</button>
+      </div>
+      <button class="btn-add" onclick="openAdd()">＋ Add Habit</button>
     </div>
   </div>
 
-  <aside class="sidebar" aria-label="Sidebar navigation">
-    <div class="sidebar-logo">
-      <div class="brand-icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+  <div class="content">
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Today</div>
+        <div class="stat-val" id="s-today">0%</div>
+        <div class="stat-sub" id="s-today-sub">0 of 0 done</div>
       </div>
-      <span class="brand-text">Habit<span class="accent-word">Track</span></span>
+      <div class="stat-card">
+        <div class="stat-label">This Period</div>
+        <div class="stat-val" id="s-period">0%</div>
+        <div class="stat-sub green">overall completion</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Best Streak</div>
+        <div class="stat-val" id="s-streak">0</div>
+        <div class="stat-sub amber">days in a row</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Habits</div>
+        <div class="stat-val" id="s-habits">0</div>
+        <div class="stat-sub">being tracked</div>
+      </div>
     </div>
 
-    <nav class="sidebar-nav">
-      <p class="nav-section-label">Main</p>
-      <a href="#" class="nav-link active" aria-current="page">
-        <span class="nav-icon" aria-hidden="true">🏠</span>
-        <span class="nav-label">Dashboard</span>
-      </a>
-      <span class="nav-link disabled">
-        <span class="nav-icon" aria-hidden="true">📋</span>
-        <span class="nav-label">Tracker</span>
-        <span class="phase-badge">Phase 3</span>
-      </span>
-      <span class="nav-link disabled">
-        <span class="nav-icon" aria-hidden="true">📈</span>
-        <span class="nav-label">Analytics</span>
-        <span class="phase-badge">Phase 5</span>
-      </span>
-
-      <p class="nav-section-label">Tools</p>
-      <span class="nav-link disabled">
-        <span class="nav-icon" aria-hidden="true">📤</span>
-        <span class="nav-label">Export</span>
-        <span class="phase-badge">Phase 6</span>
-      </span>
-      <button type="button" class="nav-link" onclick="doLogout()">
-        <span class="nav-icon" aria-hidden="true">🚪</span>
-        <span class="nav-label">Sign Out</span>
-      </button>
-    </nav>
-
-    <div class="sidebar-user" onclick="doLogout()" role="button" tabindex="0" aria-label="Sign out">
-      <div id="sidebar-avatar" class="user-avatar">?</div>
-      <div class="user-meta">
-        <div id="sidebar-name" class="user-name">—</div>
-        <div id="sidebar-email" class="user-email">—</div>
+    <!-- Chart row -->
+    <div class="chart-row">
+      <div class="card">
+        <div class="card-title">
+          <span id="chart-title">Daily Completion Rate</span>
+        </div>
+        <div class="chart-wrap"><canvas id="main-chart"></canvas></div>
       </div>
-      <span class="user-logout-icon" aria-hidden="true">→</span>
+      <div class="info-stack">
+        <div class="info-card">
+          <div class="badge badge-best">🏆 Best Habit</div>
+          <div class="info-name" id="best-name">—</div>
+          <div class="info-pct" id="best-pct">—</div>
+        </div>
+        <div class="info-card">
+          <div class="badge badge-worst">⚠ Worst Habit</div>
+          <div class="info-name" id="worst-name">—</div>
+          <div class="info-pct" id="worst-pct">—</div>
+        </div>
+        <div class="info-card">
+          <div class="card-title" style="margin-bottom:10px;font-size:13px;">Day Breakdown</div>
+          <div class="day-breakdown">
+            <div class="db-item"><div class="db-dot" style="background:var(--accent2)"></div><span class="db-label">100% days</span><span class="db-count" id="d100" style="color:var(--accent2)">0</span></div>
+            <div class="db-item"><div class="db-dot" style="background:var(--amber)"></div><span class="db-label">50%+ days</span><span class="db-count" id="d50" style="color:var(--amber)">0</span></div>
+            <div class="db-item"><div class="db-dot" style="background:var(--muted)"></div><span class="db-label">0% days</span><span class="db-count" id="d0" style="color:var(--muted)">0</span></div>
+          </div>
+        </div>
+      </div>
     </div>
-  </aside>
 
-  <div class="main-wrap">
-    <header class="topbar">
-      <div class="topbar-left">
-        <h1 class="heading-font">Dashboard</h1>
-        <p id="topbar-date" class="topbar-date">—</p>
+    <!-- Tracker -->
+    <div class="tracker-card" id="tracker-card">
+      <div class="tracker-head">
+        <div class="title" id="tracker-title">This Week</div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="period-nav" id="period-nav">
+            <button class="nav-arrow" onclick="shiftPeriod(-1)">‹</button>
+            <span class="period-label" id="period-label">—</span>
+            <button class="nav-arrow" onclick="shiftPeriod(1)">›</button>
+          </div>
+          <div class="hint" id="tracker-hint">Click boxes to mark complete</div>
+        </div>
       </div>
-      <div class="topbar-right">
-        <div class="user-chip">
-          <span class="pulse-dot" aria-hidden="true"></span>
-          <span id="topbar-name">—</span>
-        </div>
-        <button type="button" class="btn-signout" onclick="doLogout()">↩ Sign Out</button>
+      <div class="tracker-scroll" id="tracker-scroll">
+        <!-- Table injected by JS -->
       </div>
-    </header>
+    </div>
 
-    <main class="main-content">
-      <section class="hero-card animate-in delay-0">
-        <div class="hero-orb" aria-hidden="true"></div>
-        <div class="hero-left">
-          <div class="hero-badge">
-            <span class="pulse-dot" aria-hidden="true"></span>
-            Phase 2 Complete
-          </div>
-          <h2 id="hero-greeting" class="hero-title heading-font">You're in!</h2>
-          <p class="hero-desc">
-            Firebase authentication is live. Your account is secured and ready — the habit tracker grid arrives in Phase 3.
-          </p>
-        </div>
-        <div class="hero-check-circle" aria-hidden="true">✓</div>
-      </section>
-
-      <section class="phase-grid animate-in delay-1" aria-label="Project phases">
-        <article class="phase-card done">
-          <div class="phase-num">1</div>
-          <h3 class="phase-name">Setup</h3>
-          <p class="phase-desc">Project scaffold, Firebase config, and folder structure.</p>
-          <span class="status-pill done">✓ Complete</span>
-        </article>
-        <article class="phase-card done">
-          <div class="phase-num">2</div>
-          <h3 class="phase-name">Auth</h3>
-          <p class="phase-desc">Email/password and Google sign-in with protected routes.</p>
-          <span class="status-pill done">✓ Complete</span>
-        </article>
-        <article class="phase-card active">
-          <div class="phase-num">3</div>
-          <h3 class="phase-name">Core Tracker</h3>
-          <p class="phase-desc">21-day habit grid with real-time Firestore sync.</p>
-          <span class="status-pill active">→ Up Next</span>
-        </article>
-        <article class="phase-card pending">
-          <div class="phase-num">4</div>
-          <h3 class="phase-name">Views</h3>
-          <p class="phase-desc">Daily, weekly, monthly, and yearly calendar views.</p>
-          <span class="status-pill pending">Pending</span>
-        </article>
-        <article class="phase-card pending">
-          <div class="phase-num">5</div>
-          <h3 class="phase-name">Analytics</h3>
-          <p class="phase-desc">Streaks, completion rates, and habit insights.</p>
-          <span class="status-pill pending">Pending</span>
-        </article>
-        <article class="phase-card pending">
-          <div class="phase-num">6</div>
-          <h3 class="phase-name">Export</h3>
-          <p class="phase-desc">Download your data as CSV, Excel, or PDF.</p>
-          <span class="status-pill pending">Pending</span>
-        </article>
-        <article class="phase-card pending">
-          <div class="phase-num">7</div>
-          <h3 class="phase-name">Polish</h3>
-          <p class="phase-desc">Animations, mobile UX, and final design pass.</p>
-          <span class="status-pill pending">Pending</span>
-        </article>
-      </section>
-
-      <section class="animate-in delay-2">
-        <div class="section-header">
-          <h2 class="section-title heading-font">Your Account</h2>
-          <div class="section-rule" aria-hidden="true"></div>
-        </div>
-        <div class="info-grid">
-          <div class="info-card">
-            <p class="info-label">Signed in as</p>
-            <p id="info-display-name" class="info-value display-name">—</p>
-            <span class="auth-pill">✓ Firebase Auth</span>
-          </div>
-          <div class="info-card">
-            <p class="info-label">Email</p>
-            <p id="info-email" class="info-value">—</p>
-          </div>
-          <div class="info-card">
-            <p class="info-label">Firebase UID</p>
-            <p id="info-uid" class="info-value uid">—</p>
-          </div>
-        </div>
-      </section>
-    </main>
   </div>
+</div>
 
-  <script type="module">
-    import { auth } from '../js/firebase.js';
-    import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+<!-- Add/Edit Modal -->
+<div class="overlay" id="habit-modal">
+  <div class="modal">
+    <h2 id="modal-title">Add New Habit</h2>
+    <input type="text" id="habit-input" placeholder="e.g. Morning Walk" maxlength="40" />
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-confirm" onclick="confirmHabit()">Add</button>
+    </div>
+  </div>
+</div>
 
-    function getInitials(user) {
-      const name = user.displayName?.trim();
-      if (name) {
-        const parts = name.split(/\s+/).filter(Boolean);
-        const initials = parts.map((p) => p[0]).join('').toUpperCase();
-        return initials.slice(0, 2);
-      }
-      const email = user.email || '?';
-      return email[0].toUpperCase();
+<!-- Onboarding -->
+<div class="onboard-overlay" id="onboard">
+  <div class="onboard-card">
+    <h2>Welcome to <em>HabitTrack</em> 👋</h2>
+    <p>Set your start date and add your first habits. You can always add or remove habits later.</p>
+    <div class="onboard-label">Start Date</div>
+    <input type="date" class="onboard-input" id="ob-date" />
+    <div class="onboard-label">Your Habits</div>
+    <div class="onboard-habits" id="ob-habits"></div>
+    <div class="onboard-add-row">
+      <input type="text" id="ob-new" placeholder="Add a habit…" maxlength="40" />
+      <button onclick="obAddHabit()">＋ Add</button>
+    </div>
+    <button class="btn-start" onclick="obStart()">Start Tracking →</button>
+  </div>
+</div>
+
+<!-- Heatmap tooltip -->
+<div class="hm-tooltip" id="hm-tip"></div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { auth, db } from '../js/firebase.js';
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { doc, onSnapshot, setDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+// ── State ──────────────────────────────────────────────
+let user = null;
+let habits = [];          // [{id, name}]
+let completions = {};     // { "habitId_YYYY-MM-DD": true }
+let startDate = null;     // Date object
+let currentView = 'daily';
+let periodOffset = 0;     // how many periods back/forward
+let chart = null;
+let editingId = null;
+let obHabits = [];
+
+const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+// ── Auth ───────────────────────────────────────────────
+onAuthStateChanged(auth, async u => {
+  if (!u) { location.replace('login.html'); return; }
+  user = u;
+  const nm = u.displayName || u.email.split('@')[0];
+  document.getElementById('sb-av').textContent = nm.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  document.getElementById('sb-nm').textContent = nm;
+  document.getElementById('tb-date').textContent = new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+  const ref = doc(db,'users',u.uid);
+  onSnapshot(ref, snap => {
+    if (!snap.exists()) {
+      showOnboarding();
+      document.getElementById('loader').classList.add('gone');
+      return;
     }
+    const d = snap.data();
+    habits     = d.habits || [];
+    completions= d.completions || {};
+    startDate  = d.startDate ? new Date(d.startDate) : new Date();
+    renderAll();
+    setTimeout(()=>document.getElementById('loader').classList.add('gone'), 600);
+  });
+});
 
-    function getFirstName(user) {
-      const name = user.displayName?.trim();
-      if (name) return name.split(/\s+/)[0];
-      if (user.email) return user.email.split('@')[0];
-      return 'there';
+// ── Save ───────────────────────────────────────────────
+async function save() {
+  if (!user) return;
+  await updateDoc(doc(db,'users',user.uid), { habits, completions });
+}
+
+// ── Dates ──────────────────────────────────────────────
+function fmt(d) { // Date → "YYYY-MM-DD"
+  return d.toISOString().slice(0,10);
+}
+
+function today() { return fmt(new Date()); }
+
+function addDays(d, n) { const r=new Date(d); r.setDate(r.getDate()+n); return r; }
+
+function getPeriodDays() {
+  const now = new Date();
+  if (currentView === 'daily') {
+    // single day = today + offset days
+    const d = addDays(now, periodOffset);
+    return [d];
+  }
+  if (currentView === 'weekly') {
+    // week containing today + offset weeks
+    const base = addDays(now, periodOffset * 7);
+    const dow = base.getDay(); // 0=Sun
+    const mon = addDays(base, -((dow+6)%7)); // Monday
+    return Array.from({length:7}, (_,i) => addDays(mon,i));
+  }
+  if (currentView === 'monthly') {
+    // month + offset months
+    const base = new Date(now.getFullYear(), now.getMonth() + periodOffset, 1);
+    const daysInMonth = new Date(base.getFullYear(), base.getMonth()+1, 0).getDate();
+    return Array.from({length:daysInMonth}, (_,i) => new Date(base.getFullYear(), base.getMonth(), i+1));
+  }
+  return []; // yearly handled separately
+}
+
+function getPeriodLabel() {
+  const now = new Date();
+  if (currentView === 'daily') {
+    const d = addDays(now, periodOffset);
+    if (periodOffset === 0) return 'Today';
+    if (periodOffset === -1) return 'Yesterday';
+    return d.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+  }
+  if (currentView === 'weekly') {
+    const days = getPeriodDays();
+    const s = days[0].toLocaleDateString('en-IN',{day:'numeric',month:'short'});
+    const e = days[6].toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+    if (periodOffset === 0) return `This Week · ${s} – ${e}`;
+    return `${s} – ${e}`;
+  }
+  if (currentView === 'monthly') {
+    const base = new Date(now.getFullYear(), now.getMonth() + periodOffset, 1);
+    return base.toLocaleDateString('en-IN',{month:'long',year:'numeric'});
+  }
+  if (currentView === 'yearly') {
+    return String(now.getFullYear() + periodOffset);
+  }
+  return '';
+}
+
+// ── Render All ─────────────────────────────────────────
+function renderAll() {
+  updateStats();
+  renderChart();
+  renderBestWorst();
+  renderDayBreakdown();
+  if (currentView === 'yearly') {
+    renderYearlyHeatmap();
+  } else {
+    renderTable();
+  }
+  document.getElementById('period-label').textContent = getPeriodLabel();
+}
+
+// ── Stats ──────────────────────────────────────────────
+function updateStats() {
+  const td = today();
+  let todayDone = 0;
+  habits.forEach(h => { if (completions[`${h.id}_${td}`]) todayDone++; });
+  const todayPct = habits.length ? Math.round(todayDone/habits.length*100) : 0;
+  document.getElementById('s-today').textContent = todayPct+'%';
+  document.getElementById('s-today-sub').textContent = `${todayDone} of ${habits.length} done`;
+
+  // Period completion
+  const days = currentView === 'yearly' ? [] : getPeriodDays();
+  let periodDone=0, periodTotal=days.length*habits.length;
+  days.forEach(d => habits.forEach(h => { if(completions[`${h.id}_${fmt(d)}`]) periodDone++; }));
+  document.getElementById('s-period').textContent = periodTotal ? Math.round(periodDone/periodTotal*100)+'%' : '0%';
+
+  // Best streak across all habits (longest current streak)
+  let bestStreak = 0;
+  habits.forEach(h => {
+    let streak = 0, d = new Date();
+    while(true) {
+      if(completions[`${h.id}_${fmt(d)}`]) { streak++; d=addDays(d,-1); } else break;
     }
+    if(streak > bestStreak) bestStreak = streak;
+  });
+  document.getElementById('s-streak').textContent = bestStreak;
+  document.getElementById('s-habits').textContent = habits.length;
+}
 
-    function formatToday() {
-      return new Date().toLocaleDateString('en-US', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      });
+// ── Chart ──────────────────────────────────────────────
+function renderChart() {
+  let labels=[], data=[];
+
+  if (currentView === 'daily') {
+    // last 30 days
+    for(let i=29;i>=0;i--) {
+      const d = addDays(new Date(),-i);
+      labels.push(d.toLocaleDateString('en-IN',{day:'numeric',month:'short'}));
+      const done = habits.filter(h=>completions[`${h.id}_${fmt(d)}`]).length;
+      data.push(habits.length ? Math.round(done/habits.length*100) : 0);
     }
-
-    function populateUI(user) {
-      const initials = getInitials(user);
-      const displayName = user.displayName || user.email?.split('@')[0] || 'User';
-      const email = user.email || '—';
-
-      document.getElementById('sidebar-avatar').textContent = initials;
-      document.getElementById('sidebar-name').textContent = displayName;
-      document.getElementById('sidebar-email').textContent = email;
-      document.getElementById('topbar-name').textContent = displayName;
-      document.getElementById('topbar-date').textContent = formatToday();
-      document.getElementById('hero-greeting').textContent = `You're in, ${getFirstName(user)}! 🎉`;
-      document.getElementById('info-display-name').textContent = displayName;
-      document.getElementById('info-email').textContent = email;
-      document.getElementById('info-uid').textContent = user.uid;
-    }
-
-    function hideLoader() {
-      const loader = document.getElementById('loader');
-      loader.classList.add('hidden');
-      loader.setAttribute('aria-busy', 'false');
-    }
-
-    window.doLogout = async function () {
-      try {
-        await signOut(auth);
-        location.replace('login.html');
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    onAuthStateChanged(auth, (user) => {
-      if (!user) {
-        location.replace('login.html');
-        return;
-      }
-      populateUI(user);
-      setTimeout(hideLoader, 800);
+    document.getElementById('chart-title').textContent = 'Last 30 Days Completion';
+  } else if (currentView === 'weekly') {
+    // Show exactly the 7 days of the currently selected week period
+    const days = getPeriodDays();
+    days.forEach(d => {
+      labels.push(d.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' }));
+      const done = habits.filter(h => completions[`${h.id}_${fmt(d)}`]).length;
+      data.push(habits.length ? Math.round(done / habits.length * 100) : 0);
     });
-  </script>
+    document.getElementById('chart-title').textContent = getPeriodLabel();
+  } else if (currentView === 'monthly') {
+    // Only the days in the current month period
+    const days = getPeriodDays();
+    days.forEach(d => {
+      labels.push(String(d.getDate()));
+      const done = habits.filter(h => completions[`${h.id}_${fmt(d)}`]).length;
+      data.push(habits.length ? Math.round(done / habits.length * 100) : 0);
+    });
+    document.getElementById('chart-title').textContent = getPeriodLabel() + ' — Daily Completion';
+
+  } else if (currentView === 'yearly') {
+    // All 12 months of the selected year
+    const yr = new Date().getFullYear() + periodOffset;
+    for (let m = 0; m < 12; m++) {
+      const daysInMonth = new Date(yr, m + 1, 0).getDate();
+      let mDone = 0, mTotal = habits.length * daysInMonth;
+      for (let d = 1; d <= daysInMonth; d++) {
+        const day = new Date(yr, m, d);
+        habits.forEach(h => { if (completions[`${h.id}_${fmt(day)}`]) mDone++; });
+      }
+      labels.push(MONTH_NAMES[m]);
+      data.push(mTotal ? Math.round(mDone / mTotal * 100) : 0);
+    }
+    document.getElementById('chart-title').textContent = `${yr} — Monthly Breakdown`;
+  }
+
+  if (chart) { chart.data.labels=labels; chart.data.datasets[0].data=data; chart.update('none'); return; }
+
+  const ctx = document.getElementById('main-chart').getContext('2d');
+  chart = new Chart(ctx, {
+    type: 'line',
+    data: { labels, datasets: [{
+      data,
+      borderColor: '#22c55e',
+      backgroundColor: (ctx) => {
+        const g = ctx.chart.ctx.createLinearGradient(0,0,0,170);
+        g.addColorStop(0,'rgba(34,197,94,0.18)');
+        g.addColorStop(1,'rgba(34,197,94,0)');
+        return g;
+      },
+      borderWidth: 2.5,
+      pointBackgroundColor: '#22c55e',
+      pointRadius: 4,
+      pointHoverRadius: 7,
+      tension: 0.4,
+      fill: true
+    }]},
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label: c=>' '+c.raw+'%' } } },
+      scales:{
+        x:{ grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#64748b',font:{size:11}} },
+        y:{ min:0,max:100, grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#64748b',font:{size:11},callback:v=>v+'%'} }
+      }
+    }
+  });
+}
+
+// ── Best / Worst ───────────────────────────────────────
+function renderBestWorst() {
+  if (!habits.length) return;
+  const now = new Date();
+  const counts = habits.map(h => {
+    let n=0;
+    for(let i=0;i<30;i++) { if(completions[`${h.id}_${fmt(addDays(now,-i))}`]) n++; }
+    return {name:h.name, n};
+  }).sort((a,b)=>b.n-a.n);
+  const best=counts[0], worst=counts[counts.length-1];
+  document.getElementById('best-name').textContent = best.name;
+  document.getElementById('best-pct').textContent  = Math.round(best.n/30*100)+'% in last 30 days';
+  document.getElementById('worst-name').textContent= worst.name;
+  document.getElementById('worst-pct').textContent = Math.round(worst.n/30*100)+'% in last 30 days';
+}
+
+// ── Day breakdown ──────────────────────────────────────
+function renderDayBreakdown() {
+  const days = currentView === 'yearly' ? [] : getPeriodDays();
+  let d100=0,d50=0,d0=0;
+  days.forEach(d => {
+    const done = habits.filter(h=>completions[`${h.id}_${fmt(d)}`]).length;
+    const pct = habits.length ? done/habits.length : 0;
+    if(pct>=1) d100++; else if(pct>=0.5) d50++; else if(pct===0) d0++;
+  });
+  document.getElementById('d100').textContent=d100;
+  document.getElementById('d50').textContent=d50;
+  document.getElementById('d0').textContent=d0;
+}
+
+// ── Table ──────────────────────────────────────────────
+function renderTable() {
+  const days = getPeriodDays();
+  const todayStr = today();
+  const scroll = document.getElementById('tracker-scroll');
+
+  if (!habits.length) {
+    scroll.innerHTML = `<div style="padding:40px;text-align:center;color:var(--muted);">No habits yet. Click <strong style="color:var(--accent)">＋ Add Habit</strong> to start tracking.</div>`;
+    return;
+  }
+
+  let html = `<table class="htable"><thead><tr>
+    <th class="col-habit">Habit</th>`;
+
+  days.forEach(d => {
+    const ds = fmt(d);
+    const isToday = ds === todayStr;
+    const dayName = DAY_NAMES[d.getDay()];
+    const dayNum  = d.getDate();
+    const monthAbbr = MONTH_NAMES[d.getMonth()];
+    html += `<th class="day-head ${isToday?'today-head':''}">${dayName}<br><span style="font-size:10px;font-weight:400;">${dayNum} ${currentView==='monthly'?'':monthAbbr}</span></th>`;
+  });
+
+  html += `<th class="col-total">Total</th></tr></thead><tbody>`;
+
+  habits.forEach(h => {
+    // Calculate streak
+    let streak=0, sd=new Date();
+    while(completions[`${h.id}_${fmt(sd)}`]) { streak++; sd=addDays(sd,-1); }
+
+    html += `<tr class="hrow" data-hid="${h.id}">
+      <td class="col-habit">
+        <div class="habit-name-wrap">
+          <span class="habit-name-text">${h.name}</span>
+          ${streak>0?`<span class="streak-chip">🔥${streak}</span>`:''}
+          <span class="habit-actions">
+            <button class="hact" onclick="openEdit('${h.id}')" title="Rename">✏️</button>
+            <button class="hact del" onclick="deleteHabit('${h.id}')" title="Delete">🗑️</button>
+          </span>
+        </div>
+      </td>`;
+
+    let total=0;
+    days.forEach(d => {
+      const ds = fmt(d);
+      const isToday = ds === todayStr;
+      const isFuture = ds > todayStr;
+      const done = !!completions[`${h.id}_${ds}`];
+      if(done) total++;
+      const clickHandler = isFuture ? '' : `onclick="toggle('${h.id}','${ds}',this)"`;
+      html += `<td><div class="cbox ${done?'on':''} ${isToday?'today-col':''} ${isFuture?'future':''}" ${clickHandler}>${done?'✓':''}</div></td>`;
+    });
+
+    const pct = days.length ? Math.round(total/days.length*100) : 0;
+    html += `<td class="col-total"><div class="total-wrap"><div class="total-track"><div class="total-fill" style="width:${pct}%"></div></div><span class="total-num">${total}/${days.length}</span></div></td></tr>`;
+  });
+
+  html += `</tbody></table>`;
+  scroll.innerHTML = html;
+}
+
+// ── Toggle ─────────────────────────────────────────────
+window.toggle = function(hid, ds, el) {
+  const key = `${hid}_${ds}`;
+  const newVal = !completions[key];
+  completions[key] = newVal;
+  el.classList.toggle('on', newVal);
+  el.textContent = newVal ? '✓' : '';
+  save();
+  updateStats();
+  renderChart();
+  renderBestWorst();
+  renderDayBreakdown();
+  updateRowTotal(hid);
+  if(newVal) checkFullDay(ds);
+};
+
+function updateRowTotal(hid) {
+  const days = getPeriodDays();
+  const row = document.querySelector(`tr[data-hid="${hid}"]`);
+  if(!row) return;
+  let total = days.filter(d=>completions[`${hid}_${fmt(d)}`]).length;
+  const pct = days.length ? Math.round(total/days.length*100) : 0;
+  const cell = row.querySelector('.col-total');
+  if(cell) cell.innerHTML = `<div class="total-wrap"><div class="total-track"><div class="total-fill" style="width:${pct}%"></div></div><span class="total-num">${total}/${days.length}</span></div>`;
+}
+
+function checkFullDay(ds) {
+  if(!habits.length) return;
+  const allDone = habits.every(h=>completions[`${h.id}_${ds}`]);
+  if(allDone) {
+    confetti({particleCount:140,spread:80,origin:{y:0.6}});
+    showToast('🎉 Perfect day! Every habit done!');
+  }
+}
+
+// ── Yearly Heatmap ─────────────────────────────────────
+function renderYearlyHeatmap() {
+  const yr = new Date().getFullYear() + periodOffset;
+  const jan1 = new Date(yr,0,1);
+  const dec31 = new Date(yr,11,31);
+  const startDow = jan1.getDay(); // 0=Sun
+
+  // Build cells: pad to start on Sunday
+  const scroll = document.getElementById('tracker-scroll');
+
+  let html = `<div class="heatmap-wrap">`;
+
+  // Month labels
+  html += `<div class="heatmap-months">`;
+  let curMonth = -1;
+  for(let i=0;i<startDow;i++) html += `<div style="width:16px;flex-shrink:0;"></div>`;
+  let dayCount = 0;
+  let d = new Date(jan1);
+  while(d.getFullYear()===yr) {
+    if(d.getMonth()!==curMonth) {
+      curMonth=d.getMonth();
+      html+=`<div class="hm-month" style="flex:1;min-width:0;">${MONTH_NAMES[curMonth]}</div>`;
+    } else {
+      html+=`<div style="flex:1;min-width:0;"></div>`;
+    }
+    d=addDays(d,1); dayCount++;
+  }
+  html += `</div>`;
+
+  // Grid
+  html += `<div class="heatmap-body">`;
+
+  // Day labels
+  html += `<div class="hm-days">`;
+  ['','Mon','','Wed','','Fri',''].forEach(l=>html+=`<div class="hm-day-label">${l}</div>`);
+  html += `</div>`;
+
+  // Cells
+  html += `<div class="heatmap-grid">`;
+
+  // Empty cells before Jan 1
+  for(let i=0;i<startDow;i++) html+=`<div class="hm-cell" style="background:transparent"></div>`;
+
+  d = new Date(jan1);
+  while(d.getFullYear()===yr) {
+    const ds = fmt(d);
+    const done = habits.filter(h=>completions[`${h.id}_${ds}`]).length;
+    const pct  = habits.length ? done/habits.length : 0;
+    let cls = '';
+    if(pct>0.75) cls='h4'; else if(pct>0.5) cls='h3'; else if(pct>0.25) cls='h2'; else if(pct>0) cls='h1';
+    const isFuture = ds > today();
+    const label = `${d.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})} — ${done}/${habits.length} habits`;
+    html += `<div class="hm-cell ${cls} ${isFuture?'style="opacity:0.3"':''}" data-tip="${label}" onmouseenter="showTip(event,this)" onmouseleave="hideTip()"></div>`;
+    d=addDays(d,1);
+  }
+
+  html += `</div></div>`;
+
+  // Legend
+  html += `<div class="hm-legend">Less &nbsp;
+    <div class="hm-leg-cell" style="background:rgba(255,255,255,0.05)"></div>
+    <div class="hm-leg-cell h1"></div>
+    <div class="hm-leg-cell h2"></div>
+    <div class="hm-leg-cell h3"></div>
+    <div class="hm-leg-cell h4"></div>
+    &nbsp; More
+  </div></div>`;
+
+  scroll.innerHTML = html;
+}
+
+window.showTip = function(e, el) {
+  const tip = document.getElementById('hm-tip');
+  tip.textContent = el.dataset.tip;
+  tip.style.display = 'block';
+  tip.style.left = (e.clientX+12)+'px';
+  tip.style.top  = (e.clientY-30)+'px';
+};
+window.hideTip = function() { document.getElementById('hm-tip').style.display='none'; };
+
+// ── View switching ─────────────────────────────────────
+window.setView = function(v, btn) {
+  currentView = v;
+  periodOffset = 0;
+  document.querySelectorAll('.vtab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+
+  const nav = document.getElementById('period-nav');
+  nav.style.display = v === 'daily' ? 'none' : 'flex';
+
+  document.getElementById('tracker-title').textContent =
+    v==='daily'?'Today': v==='weekly'?'This Week': v==='monthly'?'This Month':'This Year';
+
+  renderAll();
+};
+
+window.shiftPeriod = function(dir) {
+  periodOffset += dir;
+  renderAll();
+};
+
+// ── Habit management ───────────────────────────────────
+window.openAdd = function() {
+  editingId = null;
+  document.getElementById('modal-title').textContent = 'Add New Habit';
+  document.getElementById('habit-input').value = '';
+  document.getElementById('habit-modal').classList.add('show');
+  setTimeout(()=>document.getElementById('habit-input').focus(),80);
+};
+
+window.openEdit = function(id) {
+  editingId = id;
+  const h = habits.find(x=>x.id===id);
+  if(!h) return;
+  document.getElementById('modal-title').textContent = 'Rename Habit';
+  document.getElementById('habit-input').value = h.name;
+  document.getElementById('habit-modal').classList.add('show');
+  setTimeout(()=>document.getElementById('habit-input').focus(),80);
+};
+
+window.closeModal = function() { document.getElementById('habit-modal').classList.remove('show'); };
+
+window.confirmHabit = async function() {
+  const name = document.getElementById('habit-input').value.trim();
+  if(!name) return;
+  if(editingId) {
+    habits = habits.map(h=>h.id===editingId?{...h,name}:h);
+    showToast('✏️ Habit renamed');
+  } else {
+    habits.push({id:'h'+Date.now(), name});
+    showToast('✅ Habit added');
+  }
+  closeModal();
+  await save();
+  renderAll();
+};
+
+window.deleteHabit = async function(id) {
+  if(!confirm('Delete this habit and all its history?')) return;
+  habits = habits.filter(h=>h.id!==id);
+  Object.keys(completions).forEach(k=>{ if(k.startsWith(id+'_')) delete completions[k]; });
+  await save();
+  renderAll();
+  showToast('🗑️ Habit deleted');
+};
+
+document.getElementById('habit-input').addEventListener('keydown', e=>{ if(e.key==='Enter') window.confirmHabit(); });
+
+// ── Onboarding ─────────────────────────────────────────
+const DEFAULT_HABITS = ['Daily Exercise','Drink Water','Read 10 Pages','Sleep Before 11pm','No Junk Food'];
+
+function showOnboarding() {
+  document.getElementById('onboard').classList.add('show');
+  document.getElementById('ob-date').value = fmt(new Date());
+  obHabits = [...DEFAULT_HABITS];
+  renderObHabits();
+}
+
+function renderObHabits() {
+  const el = document.getElementById('ob-habits');
+  el.innerHTML = obHabits.map((h,i)=>`
+    <div class="onboard-habit-row">
+      <span>${h}</span>
+      <button onclick="obRemove(${i})">✕</button>
+    </div>`).join('');
+}
+
+window.obAddHabit = function() {
+  const inp = document.getElementById('ob-new');
+  const val = inp.value.trim();
+  if(!val) return;
+  obHabits.push(val); inp.value='';
+  renderObHabits();
+};
+
+window.obRemove = function(i) { obHabits.splice(i,1); renderObHabits(); };
+
+document.getElementById('ob-new').addEventListener('keydown', e=>{ if(e.key==='Enter') window.obAddHabit(); });
+
+window.obStart = async function() {
+  const dateVal = document.getElementById('ob-date').value;
+  if(!dateVal) return alert('Please pick a start date.');
+  if(!obHabits.length) return alert('Add at least one habit.');
+  const newHabits = obHabits.map((name,i)=>({id:'h'+i, name}));
+  await setDoc(doc(db,'users',user.uid), {
+    habits: newHabits,
+    completions: {},
+    startDate: dateVal,
+    createdAt: serverTimestamp()
+  });
+  document.getElementById('onboard').classList.remove('show');
+};
+
+// ── Toast ──────────────────────────────────────────────
+window.showToast = function(msg) {
+  const t = document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
+};
+
+// ── Logout ─────────────────────────────────────────────
+window.doLogout = async function() { await signOut(auth); location.replace('login.html'); };
+
+// Init - hide daily period nav
+document.getElementById('period-nav').style.display = 'none';
+</script>
 </body>
 </html>
