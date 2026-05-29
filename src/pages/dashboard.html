@@ -217,11 +217,83 @@
     .toast { position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--surface3);border:1px solid var(--border2);border-radius:10px;padding:11px 20px;font-size:14px;font-weight:600;z-index:400;transition:transform 0.3s cubic-bezier(0.16,1,0.3,1);white-space:nowrap;pointer-events:none; }
     .toast.show { transform:translateX(-50%) translateY(0); }
 
-    @media (max-width:900px) { .stats-row{grid-template-columns:repeat(2,1fr)} .chart-row{grid-template-columns:1fr} }
-    @media (max-width:640px) { .sidebar{display:none} .main{margin-left:0} .content{padding:16px} }
+
+    /* ── Mobile hamburger button ── */
+    .mob-menu-btn { display:none;position:fixed;top:12px;left:12px;z-index:200;width:40px;height:40px;border-radius:10px;background:var(--surface2);border:1px solid var(--border2);cursor:pointer;flex-direction:column;align-items:center;justify-content:center;gap:5px; }
+    .mob-menu-btn span { display:block;width:18px;height:2px;background:var(--text);border-radius:2px;transition:all 0.25s; }
+    .mob-menu-btn.open span:nth-child(1) { transform:translateY(7px) rotate(45deg); }
+    .mob-menu-btn.open span:nth-child(2) { opacity:0; }
+    .mob-menu-btn.open span:nth-child(3) { transform:translateY(-7px) rotate(-45deg); }
+
+    /* ── Mobile sidebar overlay ── */
+    .mob-overlay { display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);z-index:90; }
+    .mob-overlay.show { display:block; }
+
+    @media (max-width:900px) {
+      .stats-row { grid-template-columns:repeat(2,1fr); }
+      .chart-row { grid-template-columns:1fr; }
+    }
+
+    @media (max-width:640px) {
+      /* Show hamburger */
+      .mob-menu-btn { display:flex; }
+
+      /* Sidebar slides in/out */
+      .sidebar { transform:translateX(-100%);transition:transform 0.3s cubic-bezier(0.16,1,0.3,1);z-index:100; }
+      .sidebar.open { transform:translateX(0); }
+
+      /* Main takes full width */
+      .main { margin-left:0; }
+
+      /* Topbar adjustments */
+      .topbar { padding:0 12px 0 60px;height:54px;flex-wrap:wrap; }
+      .topbar-left h1 { font-size:15px; }
+      .topbar-right { gap:6px; }
+      .view-tabs .vtab { padding:6px 10px;font-size:12px; }
+      .btn-export { display:none; }
+      .btn-add { padding:7px 12px;font-size:12px; }
+
+      /* Content */
+      .content { padding:12px; }
+      .stats-row { grid-template-columns:repeat(2,1fr);gap:8px; }
+      .stat-card { padding:12px 14px; }
+      .stat-val { font-size:22px; }
+
+      /* Chart row stacks */
+      .chart-row { grid-template-columns:1fr;gap:10px; }
+
+      /* Tracker table — make it scrollable horizontally */
+      .tracker-scroll { overflow-x:auto;-webkit-overflow-scrolling:touch; }
+      .tracker-head { padding:12px 14px;flex-wrap:wrap;gap:8px; }
+      .period-nav { order:2;width:100%;justify-content:center; }
+
+      /* Checkboxes bigger for touch */
+      .cbox { width:32px;height:32px;border-radius:8px;font-size:15px; }
+
+      /* Export drawer full width on mobile */
+      .exp-drawer { width:100vw; }
+
+      /* Onboarding card */
+      .onboard-card { padding:24px 20px;margin:16px; }
+
+      /* Heatmap smaller cells */
+      .heatmap-grid { grid-template-rows:repeat(7,10px);gap:2px;grid-auto-columns:10px; }
+      .hm-cell { width:10px;height:10px; }
+    }
+
+    @media (max-width:380px) {
+      .stats-row { grid-template-columns:1fr 1fr; }
+      .view-tabs .vtab { padding:5px 8px;font-size:11px; }
+    }
   </style>
 </head>
 <body>
+
+
+<button class="mob-menu-btn" id="mob-btn" onclick="toggleMobMenu()">
+  <span></span><span></span><span></span>
+</button>
+<div class="mob-overlay" id="mob-overlay" onclick="closeMobMenu()"></div>
 
 <div id="loader">
   <div class="loader-logo"><div class="lmark">v</div>Habit<em>Track</em></div>
@@ -949,6 +1021,30 @@ window.copyLink = function() {
 
 // -- Logout --
 window.doLogout = async function() { await signOut(auth); location.replace('login.html'); };
+
+// -- Mobile menu --
+window.toggleMobMenu = function() {
+  const sidebar = document.querySelector('.sidebar');
+  const btn = document.getElementById('mob-btn');
+  const overlay = document.getElementById('mob-overlay');
+  sidebar.classList.toggle('open');
+  btn.classList.toggle('open');
+  overlay.classList.toggle('show');
+};
+
+window.closeMobMenu = function() {
+  document.querySelector('.sidebar').classList.remove('open');
+  document.getElementById('mob-btn').classList.remove('open');
+  document.getElementById('mob-overlay').classList.remove('show');
+};
+
+// Close mobile menu when a nav link is clicked
+document.querySelectorAll('.nav-link').forEach(link => {
+  link.addEventListener('click', () => {
+    if (window.innerWidth <= 640) closeMobMenu();
+  });
+});
+
 </script>
 </body>
 </html>
