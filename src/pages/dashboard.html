@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — HabitTrack</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@600;700&family=Cabinet+Grotesk:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #060910;
+      --bg2: #0b0f18;
+      --surface: #0f1520;
+      --surface2: #141b28;
+      --surface3: #1a2235;
+      --border: rgba(255, 255, 255, 0.07);
+      --border2: rgba(255, 255, 255, 0.13);
+      --accent: #4ade80;
+      --accent2: #22c55e;
+      --accentd: #16a34a;
+      --blue: #3b82f6;
+      --amber: #f59e0b;
+      --red: #f87171;
+      --text: #f1f5f9;
+      --muted: #64748b;
+      --muted2: #94a3b8;
+      --error: #f87171;
+      --sidebar-w: 240px;
+    }
+
+    body {
+      font-family: 'Cabinet Grotesk', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    h1, h2, h3, .heading-font {
+      font-family: 'Clash Display', system-ui, sans-serif;
+    }
+
+    /* —— Loading overlay —— */
+    .loader-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 28px;
+      transition: opacity 0.4s ease, visibility 0.4s ease;
+    }
+
+    .loader-overlay.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .loader-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .loader-brand .brand-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 11px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .loader-brand .brand-icon svg {
+      width: 24px;
+      height: 24px;
+      stroke: #060910;
+      stroke-width: 2.5;
+      fill: none;
+    }
+
+    .loader-brand .brand-text {
+      font-family: 'Clash Display', sans-serif;
+      font-weight: 700;
+      font-size: 1.5rem;
+      letter-spacing: -0.02em;
+    }
+
+    .loader-brand .accent-word { color: var(--accent); }
+
+    .loader-bar-track {
+      width: 200px;
+      height: 3px;
+      background: var(--surface2);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .loader-bar-fill {
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 3px;
+      animation: loadBar 1.2s ease-out forwards;
+    }
+
+    @keyframes loadBar {
+      to { width: 100%; }
+    }
+
+    /* —— Sidebar —— */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: var(--sidebar-w);
+      height: 100vh;
+      background: var(--bg2);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      z-index: 100;
+    }
+
+    .sidebar-logo {
+      padding: 24px 20px 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 9px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .brand-icon svg {
+      width: 20px;
+      height: 20px;
+      stroke: #060910;
+      stroke-width: 2.5;
+      fill: none;
+    }
+
+    .brand-text {
+      font-family: 'Clash Display', sans-serif;
+      font-weight: 700;
+      font-size: 1.15rem;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-text .accent-word { color: var(--accent); }
+
+    .sidebar-nav {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 12px;
+    }
+
+    .nav-section-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      padding: 12px 12px 8px;
+      text-transform: uppercase;
+    }
+
+    .nav-link {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      margin-bottom: 4px;
+      border-radius: 10px;
+      color: var(--muted2);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: background 0.2s, color 0.2s;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      cursor: default;
+      font-family: inherit;
+    }
+
+    .nav-link .nav-icon { font-size: 1rem; width: 22px; text-align: center; flex-shrink: 0; }
+
+    .nav-link .nav-label { flex: 1; }
+
+    .nav-link:not(.disabled):not(.active):hover {
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    .nav-link.active {
+      background: rgba(74, 222, 128, 0.1);
+      color: var(--accent);
+    }
+
+    .nav-link.active::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 60%;
+      background: var(--accent);
+      border-radius: 0 3px 3px 0;
+    }
+
+    .nav-link.disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .phase-badge {
+      font-size: 0.65rem;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 20px;
+      background: rgba(74, 222, 128, 0.15);
+      color: var(--accent);
+      white-space: nowrap;
+    }
+
+    .sidebar-user {
+      margin: 12px;
+      padding: 14px;
+      border-radius: 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .sidebar-user:hover {
+      background: var(--surface2);
+      border-color: var(--border2);
+    }
+
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accentd), #0d2818);
+      border: 2px solid rgba(74, 222, 128, 0.4);
+      box-shadow: 0 0 12px rgba(74, 222, 128, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Clash Display', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .user-meta { flex: 1; min-width: 0; }
+
+    .user-name {
+      font-weight: 600;
+      font-size: 0.875rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .user-email {
+      font-size: 0.75rem;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .user-logout-icon {
+      color: var(--muted);
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+
+    /* —— Main layout —— */
+    .main-wrap {
+      margin-left: var(--sidebar-w);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 32px;
+      background: rgba(6, 9, 16, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .topbar-left h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      margin-bottom: 4px;
+    }
+
+    .topbar-date {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .user-chip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 20px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.5); }
+      50% { opacity: 0.85; box-shadow: 0 0 0 6px rgba(74, 222, 128, 0); }
+    }
+
+    .btn-signout {
+      padding: 8px 14px;
+      border-radius: 10px;
+      border: 1px solid rgba(248, 113, 113, 0.3);
+      background: rgba(248, 113, 113, 0.1);
+      color: var(--red);
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-signout:hover {
+      background: rgba(248, 113, 113, 0.18);
+    }
+
+    .main-content {
+      padding: 32px;
+      max-width: 1100px;
+      width: 100%;
+    }
+
+    /* —— Animations —— */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .animate-in {
+      opacity: 0;
+      animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .delay-0 { animation-delay: 0s; }
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+
+    /* —— Hero card —— */
+    .hero-card {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      padding: 32px 36px;
+      margin-bottom: 32px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      border-left: 4px solid;
+      border-left-color: var(--accent);
+      box-shadow: inset 4px 0 24px -4px rgba(74, 222, 128, 0.35);
+    }
+
+    .hero-orb {
+      position: absolute;
+      top: -40px;
+      right: -40px;
+      width: 180px;
+      height: 180px;
+      background: radial-gradient(circle, rgba(74, 222, 128, 0.25) 0%, transparent 70%);
+      filter: blur(30px);
+      pointer-events: none;
+    }
+
+    .hero-left { position: relative; z-index: 1; flex: 1; }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      margin-bottom: 16px;
+      border-radius: 20px;
+      background: rgba(74, 222, 128, 0.12);
+      border: 1px solid rgba(74, 222, 128, 0.25);
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .hero-badge .pulse-dot { width: 6px; height: 6px; }
+
+    .hero-title {
+      font-size: clamp(1.5rem, 3vw, 1.85rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      margin-bottom: 10px;
+    }
+
+    .hero-desc {
+      color: var(--muted2);
+      font-size: 0.95rem;
+      line-height: 1.6;
+      max-width: 480px;
+    }
+
+    .hero-check-circle {
+      position: relative;
+      z-index: 1;
+      flex-shrink: 0;
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      border: 3px solid transparent;
+      background:
+        linear-gradient(var(--surface), var(--surface)) padding-box,
+        linear-gradient(135deg, var(--accent), var(--accent2)) border-box;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+    }
+
+    /* —— Phase grid —— */
+    .phase-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+
+    .phase-card {
+      padding: 20px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-height: 140px;
+    }
+
+    .phase-card.done {
+      background: rgba(74, 222, 128, 0.06);
+      border-color: rgba(74, 222, 128, 0.25);
+    }
+
+    .phase-card.active {
+      background: rgba(59, 130, 246, 0.08);
+      border-color: rgba(59, 130, 246, 0.35);
+    }
+
+    .phase-card.pending {
+      background: var(--surface2);
+    }
+
+    .phase-num {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Clash Display', sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+
+    .phase-card.done .phase-num {
+      background: rgba(74, 222, 128, 0.2);
+      color: var(--accent);
+    }
+
+    .phase-card.active .phase-num {
+      background: rgba(59, 130, 246, 0.25);
+      color: var(--blue);
+    }
+
+    .phase-card.pending .phase-num {
+      background: var(--surface3);
+      color: var(--muted);
+    }
+
+    .phase-name {
+      font-weight: 700;
+      font-size: 1rem;
+      font-family: 'Clash Display', sans-serif;
+    }
+
+    .phase-desc {
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.5;
+      flex: 1;
+    }
+
+    .status-pill {
+      align-self: flex-start;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      margin-top: auto;
+    }
+
+    .status-pill.done {
+      background: rgba(74, 222, 128, 0.15);
+      color: var(--accent);
+    }
+
+    .status-pill.active {
+      background: rgba(59, 130, 246, 0.15);
+      color: var(--blue);
+    }
+
+    .status-pill.pending {
+      background: var(--surface3);
+      color: var(--muted);
+    }
+
+    /* —— Account section —— */
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .section-title {
+      font-family: 'Clash Display', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .section-rule {
+      flex: 1;
+      height: 1px;
+      background: var(--border2);
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .info-card {
+      padding: 20px;
+      border-radius: 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+    }
+
+    .info-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .info-value {
+      font-size: 1rem;
+      font-weight: 500;
+      word-break: break-all;
+    }
+
+    .info-value.display-name {
+      font-family: 'Clash Display', sans-serif;
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .info-value.uid {
+      font-family: ui-monospace, 'Cascadia Code', monospace;
+      font-size: 0.75rem;
+      color: var(--muted2);
+      line-height: 1.5;
+    }
+
+    .auth-pill {
+      display: inline-flex;
+      margin-top: 10px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: rgba(74, 222, 128, 0.12);
+      color: var(--accent);
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+
+    @media (max-width: 900px) {
+      .info-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 639px) {
+      .sidebar { display: none; }
+      .main-wrap { margin-left: 0; }
+      .topbar { padding: 16px 20px; }
+      .main-content { padding: 20px 16px; }
+      .hero-card {
+        flex-direction: column;
+        text-align: center;
+        padding: 24px 20px;
+      }
+      .hero-desc { max-width: none; }
+      .topbar-right .user-chip { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div id="loader" class="loader-overlay" aria-live="polite" aria-busy="true">
+    <div class="loader-brand">
+      <div class="brand-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+      </div>
+      <span class="brand-text">Habit<span class="accent-word">Track</span></span>
+    </div>
+    <div class="loader-bar-track">
+      <div class="loader-bar-fill"></div>
+    </div>
+  </div>
+
+  <aside class="sidebar" aria-label="Sidebar navigation">
+    <div class="sidebar-logo">
+      <div class="brand-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+      </div>
+      <span class="brand-text">Habit<span class="accent-word">Track</span></span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <p class="nav-section-label">Main</p>
+      <a href="#" class="nav-link active" aria-current="page">
+        <span class="nav-icon" aria-hidden="true">🏠</span>
+        <span class="nav-label">Dashboard</span>
+      </a>
+      <span class="nav-link disabled">
+        <span class="nav-icon" aria-hidden="true">📋</span>
+        <span class="nav-label">Tracker</span>
+        <span class="phase-badge">Phase 3</span>
+      </span>
+      <span class="nav-link disabled">
+        <span class="nav-icon" aria-hidden="true">📈</span>
+        <span class="nav-label">Analytics</span>
+        <span class="phase-badge">Phase 5</span>
+      </span>
+
+      <p class="nav-section-label">Tools</p>
+      <span class="nav-link disabled">
+        <span class="nav-icon" aria-hidden="true">📤</span>
+        <span class="nav-label">Export</span>
+        <span class="phase-badge">Phase 6</span>
+      </span>
+      <button type="button" class="nav-link" onclick="doLogout()">
+        <span class="nav-icon" aria-hidden="true">🚪</span>
+        <span class="nav-label">Sign Out</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-user" onclick="doLogout()" role="button" tabindex="0" aria-label="Sign out">
+      <div id="sidebar-avatar" class="user-avatar">?</div>
+      <div class="user-meta">
+        <div id="sidebar-name" class="user-name">—</div>
+        <div id="sidebar-email" class="user-email">—</div>
+      </div>
+      <span class="user-logout-icon" aria-hidden="true">→</span>
+    </div>
+  </aside>
+
+  <div class="main-wrap">
+    <header class="topbar">
+      <div class="topbar-left">
+        <h1 class="heading-font">Dashboard</h1>
+        <p id="topbar-date" class="topbar-date">—</p>
+      </div>
+      <div class="topbar-right">
+        <div class="user-chip">
+          <span class="pulse-dot" aria-hidden="true"></span>
+          <span id="topbar-name">—</span>
+        </div>
+        <button type="button" class="btn-signout" onclick="doLogout()">↩ Sign Out</button>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <section class="hero-card animate-in delay-0">
+        <div class="hero-orb" aria-hidden="true"></div>
+        <div class="hero-left">
+          <div class="hero-badge">
+            <span class="pulse-dot" aria-hidden="true"></span>
+            Phase 2 Complete
+          </div>
+          <h2 id="hero-greeting" class="hero-title heading-font">You're in!</h2>
+          <p class="hero-desc">
+            Firebase authentication is live. Your account is secured and ready — the habit tracker grid arrives in Phase 3.
+          </p>
+        </div>
+        <div class="hero-check-circle" aria-hidden="true">✓</div>
+      </section>
+
+      <section class="phase-grid animate-in delay-1" aria-label="Project phases">
+        <article class="phase-card done">
+          <div class="phase-num">1</div>
+          <h3 class="phase-name">Setup</h3>
+          <p class="phase-desc">Project scaffold, Firebase config, and folder structure.</p>
+          <span class="status-pill done">✓ Complete</span>
+        </article>
+        <article class="phase-card done">
+          <div class="phase-num">2</div>
+          <h3 class="phase-name">Auth</h3>
+          <p class="phase-desc">Email/password and Google sign-in with protected routes.</p>
+          <span class="status-pill done">✓ Complete</span>
+        </article>
+        <article class="phase-card active">
+          <div class="phase-num">3</div>
+          <h3 class="phase-name">Core Tracker</h3>
+          <p class="phase-desc">21-day habit grid with real-time Firestore sync.</p>
+          <span class="status-pill active">→ Up Next</span>
+        </article>
+        <article class="phase-card pending">
+          <div class="phase-num">4</div>
+          <h3 class="phase-name">Views</h3>
+          <p class="phase-desc">Daily, weekly, monthly, and yearly calendar views.</p>
+          <span class="status-pill pending">Pending</span>
+        </article>
+        <article class="phase-card pending">
+          <div class="phase-num">5</div>
+          <h3 class="phase-name">Analytics</h3>
+          <p class="phase-desc">Streaks, completion rates, and habit insights.</p>
+          <span class="status-pill pending">Pending</span>
+        </article>
+        <article class="phase-card pending">
+          <div class="phase-num">6</div>
+          <h3 class="phase-name">Export</h3>
+          <p class="phase-desc">Download your data as CSV, Excel, or PDF.</p>
+          <span class="status-pill pending">Pending</span>
+        </article>
+        <article class="phase-card pending">
+          <div class="phase-num">7</div>
+          <h3 class="phase-name">Polish</h3>
+          <p class="phase-desc">Animations, mobile UX, and final design pass.</p>
+          <span class="status-pill pending">Pending</span>
+        </article>
+      </section>
+
+      <section class="animate-in delay-2">
+        <div class="section-header">
+          <h2 class="section-title heading-font">Your Account</h2>
+          <div class="section-rule" aria-hidden="true"></div>
+        </div>
+        <div class="info-grid">
+          <div class="info-card">
+            <p class="info-label">Signed in as</p>
+            <p id="info-display-name" class="info-value display-name">—</p>
+            <span class="auth-pill">✓ Firebase Auth</span>
+          </div>
+          <div class="info-card">
+            <p class="info-label">Email</p>
+            <p id="info-email" class="info-value">—</p>
+          </div>
+          <div class="info-card">
+            <p class="info-label">Firebase UID</p>
+            <p id="info-uid" class="info-value uid">—</p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script type="module">
+    import { auth } from '../js/firebase.js';
+    import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+
+    function getInitials(user) {
+      const name = user.displayName?.trim();
+      if (name) {
+        const parts = name.split(/\s+/).filter(Boolean);
+        const initials = parts.map((p) => p[0]).join('').toUpperCase();
+        return initials.slice(0, 2);
+      }
+      const email = user.email || '?';
+      return email[0].toUpperCase();
+    }
+
+    function getFirstName(user) {
+      const name = user.displayName?.trim();
+      if (name) return name.split(/\s+/)[0];
+      if (user.email) return user.email.split('@')[0];
+      return 'there';
+    }
+
+    function formatToday() {
+      return new Date().toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+    }
+
+    function populateUI(user) {
+      const initials = getInitials(user);
+      const displayName = user.displayName || user.email?.split('@')[0] || 'User';
+      const email = user.email || '—';
+
+      document.getElementById('sidebar-avatar').textContent = initials;
+      document.getElementById('sidebar-name').textContent = displayName;
+      document.getElementById('sidebar-email').textContent = email;
+      document.getElementById('topbar-name').textContent = displayName;
+      document.getElementById('topbar-date').textContent = formatToday();
+      document.getElementById('hero-greeting').textContent = `You're in, ${getFirstName(user)}! 🎉`;
+      document.getElementById('info-display-name').textContent = displayName;
+      document.getElementById('info-email').textContent = email;
+      document.getElementById('info-uid').textContent = user.uid;
+    }
+
+    function hideLoader() {
+      const loader = document.getElementById('loader');
+      loader.classList.add('hidden');
+      loader.setAttribute('aria-busy', 'false');
+    }
+
+    window.doLogout = async function () {
+      try {
+        await signOut(auth);
+        location.replace('login.html');
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        location.replace('login.html');
+        return;
+      }
+      populateUI(user);
+      setTimeout(hideLoader, 800);
+    });
+  </script>
+</body>
+</html>

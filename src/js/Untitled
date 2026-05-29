@@ -1,0 +1,10 @@
+Import initializeApp from https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js
+Import getAuth and GoogleAuthProvider from https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js
+Import getFirestore from https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js
+
+Create a firebaseConfig object with these exact keys: apiKey, authDomain, projectId, storageBucket, messagingSenderId, appId — leave their values as empty strings with a comment saying "PASTE YOUR FIREBASE VALUES HERE"
+
+Initialize the app with initializeApp(firebaseConfig)
+Export: const auth = getAuth(app)
+Export: const db = getFirestore(app)  
+Export: const googleProvider = new GoogleAuthProvider()
