@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>HabitTrack - Dashboard</title>
+  <title>HabitTrack - Shared Tracker</title>
   <link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Cabinet+Grotesk:wght@400;500;700;800&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
@@ -50,13 +50,13 @@
     .nav-sec { font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);padding:10px 10px 6px;margin-top:4px; }
     .nav-link { display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:10px;color:var(--muted2);font-size:14px;font-weight:700;cursor:pointer;text-decoration:none;transition:all 0.15s;position:relative;border:1px solid transparent; }
     .nav-link:hover { background:var(--surface2);color:var(--text); }
-    .nav-link.active { background:rgba(224,164,88,0.1);color:var(--accent);border-color:rgba(224,164,88,0.15); }
+    .nav-link.active { background:rgba(74,222,128,0.1);color:var(--accent);border-color:rgba(74,222,128,0.15); }
     .nav-link.active::before { content:'';position:absolute;left:-1px;top:20%;bottom:20%;width:3px;background:var(--accent2);border-radius:0 3px 3px 0; }
-    .nav-icon { display:flex;align-items:center;justify-content:center;width:20px;flex-shrink:0;color:inherit; }
+    .nav-icon { font-size:16px;width:20px;text-align:center;flex-shrink:0; }
     .sb-bottom { padding:14px 12px;border-top:1px solid var(--border); }
     .user-card { display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;transition:background 0.15s; }
     .user-card:hover { background:var(--surface3); }
-    .avatar { width:32px;height:32px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,#1e3a5f,var(--accentd));display:grid;place-items:center;font-weight:800;font-size:12px;border:2px solid rgba(224,164,88,0.2); }
+    .avatar { width:32px;height:32px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,#1e3a5f,var(--accentd));display:grid;place-items:center;font-weight:800;font-size:12px;border:2px solid rgba(74,222,128,0.2); }
     .uname { font-size:13px;font-weight:700;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
     .logout-ico { font-size:14px;color:var(--muted);transition:color 0.15s; }
     .user-card:hover .logout-ico { color:var(--red); }
@@ -69,7 +69,7 @@
 
     .view-tabs { display:flex;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:3px;gap:2px; }
     .vtab { padding:7px 16px;border:none;border-radius:7px;background:transparent;color:var(--muted);font-family:'Cabinet Grotesk',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.15s; }
-    .vtab.active { background:linear-gradient(135deg,rgba(224,164,88,0.15),rgba(224,164,88,0.08));color:var(--accent);border:1px solid rgba(224,164,88,0.2); }
+    .vtab.active { background:linear-gradient(135deg,rgba(74,222,128,0.15),rgba(74,222,128,0.08));color:var(--accent);border:1px solid rgba(74,222,128,0.2); }
     .vtab:hover:not(.active) { color:var(--text); }
 
     .btn-export { display:flex;align-items:center;gap:7px;padding:8px 14px;background:var(--surface);border:1px solid var(--border2);border-radius:9px;color:var(--text);font-family:'Cabinet Grotesk',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:background 0.15s; }
@@ -82,8 +82,10 @@
     .stat-card { background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;transition:transform 0.15s,border-color 0.15s; }
     .stat-card:hover { transform:translateY(-2px);border-color:var(--border2); }
     .stat-label { font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;color:var(--muted);margin-bottom:6px; }
-    .stat-val { font-family:'Clash Display',sans-serif;font-size:28px;font-weight:700;line-height:1;margin-bottom:3px;color:#E0A458; }
-    .stat-sub { font-size:12px;color:var(--muted); }
+    .stat-val { font-family:'Clash Display',sans-serif;font-size:28px;font-weight:700;line-height:1;margin-bottom:3px; }
+    .stat-sub { font-size:12px;color:var(--muted2); }
+    .stat-sub.green { color:var(--accent2); }
+    .stat-sub.amber { color:var(--amber); }
 
     .chart-row { display:grid;grid-template-columns:1fr 300px;gap:14px;margin-bottom:20px; }
     .card { background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 22px; }
@@ -93,8 +95,8 @@
     .info-stack { display:flex;flex-direction:column;gap:12px; }
     .info-card { background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;flex:1; }
     .badge { display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px; }
-    .badge-best { background:rgba(224,164,88,0.10);border:1px solid rgba(224,164,88,0.22);border-radius:6px;color:#E0A458;padding:4px 9px; }
-    .badge-worst { background:rgba(224,106,82,0.10);border:1px solid rgba(224,106,82,0.22);border-radius:6px;color:#E06A52;padding:4px 9px; }
+    .badge-best { background:rgba(74,222,128,0.1);color:var(--accent);border:1px solid rgba(74,222,128,0.2); }
+    .badge-worst { background:rgba(248,113,113,0.1);color:var(--red);border:1px solid rgba(248,113,113,0.2); }
     .info-name { font-family:'Clash Display',sans-serif;font-size:19px;font-weight:700; }
     .info-pct { font-size:12px;color:var(--muted2);margin-top:3px; }
     .day-breakdown { display:flex;flex-direction:column;gap:6px; }
@@ -174,8 +176,8 @@
       border-color: var(--accent);
     }
     .streak-chip { display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:99px;font-size:10px;font-weight:800;background:rgba(245,158,11,0.1);color:var(--amber);border:1px solid rgba(245,158,11,0.2);margin-left:4px; }
-    .cbox { width:28px;height:28px;border-radius:7px;border:2px solid rgba(255,255,255,0.1);background:transparent;cursor:pointer;display:grid;place-items:center;margin:0 auto;transition:all 0.15s;font-size:13px;color:transparent;user-select:none;box-shadow:none;background-image:none; }
-    .cbox:hover { border-color:rgba(224,164,88,0.4);background:rgba(224,164,88,0.06); }
+    .cbox { width:28px;height:28px;border-radius:7px;border:2px solid rgba(255,255,255,0.1);background:transparent;cursor:default;display:grid;place-items:center;margin:0 auto;transition:all 0.15s;font-size:13px;color:transparent;user-select:none;box-shadow:none;background-image:none; }
+    .cbox:hover { border-color:rgba(255,255,255,0.1);background:transparent; }
     .cbox.on {
       background: #E0A458;
       border-color: #E0A458;
@@ -213,7 +215,7 @@
     @keyframes modalIn { from{opacity:0;transform:scale(0.94) translateY(12px)}to{opacity:1;transform:scale(1) translateY(0)} }
     .modal h2 { font-family:'Clash Display',sans-serif;font-size:20px;font-weight:700;margin-bottom:18px; }
     .modal input { width:100%;background:rgba(255,255,255,0.06);border:1px solid var(--border2);border-radius:10px;padding:11px 14px;color:var(--text);font-family:'Cabinet Grotesk',sans-serif;font-size:15px;outline:none;margin-bottom:14px; }
-    .modal input:focus { border-color:rgba(224,164,88,0.4); }
+    .modal input:focus { border-color:rgba(74,222,128,0.4); }
     .modal-btns { display:flex;gap:10px; }
     .modal-btns button { flex:1;padding:11px;border:none;border-radius:9px;font-family:'Cabinet Grotesk',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:opacity 0.15s; }
     .btn-cancel { background:rgba(255,255,255,0.07);color:var(--text); }
@@ -250,7 +252,7 @@
     .exp-section-label { font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;color:var(--muted);margin-bottom:12px; }
     .exp-range-tabs { display:flex;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:3px;gap:2px; }
     .ertab { flex:1;padding:8px 0;border:none;border-radius:7px;background:transparent;color:var(--muted);font-family:'Cabinet Grotesk',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.15s; }
-    .ertab.active { background:rgba(224,164,88,0.12);color:var(--accent);border:1px solid rgba(224,164,88,0.2); }
+    .ertab.active { background:rgba(74,222,128,0.12);color:var(--accent);border:1px solid rgba(74,222,128,0.2); }
     .exp-options { display:flex;flex-direction:column;gap:8px; }
     .exp-opt { display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:12px;cursor:pointer;transition:all 0.15s;text-align:left;width:100%; }
     .exp-opt:hover { background:var(--surface3);border-color:var(--border2);transform:translateX(3px); }
@@ -274,6 +276,12 @@
 
     .toast { position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--surface3);border:1px solid var(--border2);border-radius:10px;padding:11px 20px;font-size:14px;font-weight:600;z-index:400;transition:transform 0.3s cubic-bezier(0.16,1,0.3,1);white-space:nowrap;pointer-events:none; }
     .toast.show { transform:translateX(-50%) translateY(0); }
+    .share-readonly .btn-add,
+    .share-readonly .btn-export,
+    .share-readonly .habit-actions,
+    .share-readonly #habit-modal,
+    .share-readonly #onboard,
+    .share-readonly #exp-overlay { display:none !important; }
 
 
     /* ── Mobile hamburger button ── */
@@ -345,7 +353,7 @@
     }
   </style>
 </head>
-<body>
+<body class="share-readonly">
 
 
 <button class="mob-menu-btn" id="mob-btn" onclick="toggleMobMenu()">
@@ -365,14 +373,14 @@
   </div>
   <nav class="sb-nav">
     <div class="nav-sec">Main</div>
-    <a class="nav-link active"><span class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5"/><path d="M5 10v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V10"/><path d="M9 21v-6h6v6"/></svg></span> Dashboard</a>
-    <a class="nav-link" href="analytics.html"><span class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="5"/><rect x="12" y="8" width="3" height="9"/><rect x="17" y="5" width="3" height="12"/></svg></span> Analytics</a>
+    <a class="nav-link active"><span class="nav-icon">🏠</span> Dashboard</a>
+    <a class="nav-link" href="analytics.html"><span class="nav-icon">📊</span> Analytics</a>
     <div class="nav-sec">Tools</div>
-    <a class="nav-link" onclick="openExport()"><span class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M8 11l4 4 4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg></span> Export</a>
-    <a class="nav-link" onclick="doLogout()"><span class="nav-icon">↩</span> Sign Out</a>
+    <a class="nav-link" onclick="openExport()"><span class="nav-icon">📤</span> Export</a>
+    <a class="nav-link" href="login.html"><span class="nav-icon">↩</span> Sign In</a>
   </nav>
   <div class="sb-bottom">
-    <div class="user-card" onclick="doLogout()">
+    <div class="user-card" onclick="location.href='login.html'">
       <div class="avatar" id="sb-av">?</div>
       <div class="uname" id="sb-nm">...</div>
       <div class="logout-ico">↩</div>
@@ -383,7 +391,7 @@
 <div class="main">
   <div class="topbar">
     <div class="topbar-left">
-      <h1>Habit Tracker</h1>
+      <h1>Shared Tracker</h1>
       <div class="sub" id="tb-date">Loading...</div>
     </div>
     <div class="topbar-right">
@@ -391,7 +399,7 @@
         <button class="vtab active" onclick="setView('monthly',this)">Monthly</button>
         <button class="vtab" onclick="setView('yearly',this)">Yearly</button>
       </div>
-      <button class="btn-export" onclick="openExport()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:6px"><path d="M12 3v12"/><path d="M8 11l4 4 4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>Export</button>
+      <button class="btn-export" onclick="openExport()">📤 Export</button>
       <button class="btn-add" onclick="openAdd()">+ Add Habit</button>
     </div>
   </div>
@@ -399,8 +407,8 @@
   <div class="content">
     <div class="stats-row">
       <div class="stat-card"><div class="stat-label">Today</div><div class="stat-val" id="s-today">0%</div><div class="stat-sub" id="s-today-sub">0 of 0 done</div></div>
-      <div class="stat-card"><div class="stat-label">This Period</div><div class="stat-val" id="s-period">0%</div><div class="stat-sub">overall completion</div></div>
-      <div class="stat-card"><div class="stat-label">Best Streak</div><div class="stat-val" id="s-streak">0</div><div class="stat-sub">days in a row<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#E0A458" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-left:4px"><path d="M12 3c0 3-4 4-4 8a4 4 0 0 0 8 0c0-2-1-3-1-3 2 1 3 3 3 5a6 6 0 0 1-12 0c0-5 6-6 6-10z"/></svg></div></div>
+      <div class="stat-card"><div class="stat-label">This Period</div><div class="stat-val" id="s-period">0%</div><div class="stat-sub green">overall completion</div></div>
+      <div class="stat-card"><div class="stat-label">Best Streak</div><div class="stat-val" id="s-streak">0</div><div class="stat-sub amber">days in a row 🔥</div></div>
       <div class="stat-card"><div class="stat-label">Total Habits</div><div class="stat-val" id="s-habits">0</div><div class="stat-sub">being tracked</div></div>
     </div>
 
@@ -411,12 +419,12 @@
       </div>
       <div class="info-stack">
         <div class="info-card">
-          <div class="badge badge-best"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M7 6H4v1a3 3 0 0 0 3 3"/><path d="M17 6h3v1a3 3 0 0 0-3 3"/></svg>Best Habit</div>
+          <div class="badge badge-best">🏆 Best Habit</div>
           <div class="info-name" id="best-name">-</div>
           <div class="info-pct" id="best-pct">-</div>
         </div>
         <div class="info-card">
-          <div class="badge badge-worst"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px"><path d="M12 3l9 16H3L12 3z"/><path d="M12 10v4"/><path d="M12 17h.01"/></svg>Worst Habit</div>
+          <div class="badge badge-worst">⚠ Worst Habit</div>
           <div class="info-name" id="worst-name">-</div>
           <div class="info-pct" id="worst-pct">-</div>
         </div>
@@ -536,9 +544,8 @@
 <div class="toast" id="toast"></div>
 
 <script type="module">
-import { auth, db } from '../js/firebase.js';
-import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { doc, onSnapshot, setDoc, updateDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { db } from '../js/firebase.js';
+import { doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 // -- State --
 let user = null;
@@ -568,19 +575,15 @@ function hideLoader() {
   document.getElementById('loader').classList.add('gone');
 }
 
-// -- Auth --
-onAuthStateChanged(auth, u => {
-  if (!u) { location.replace('login.html'); return; }
-  user = u;
-  const nm = u.displayName || (u.email ? u.email.split('@')[0] : 'User');
-  document.getElementById('sb-av').textContent = nm.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
-  document.getElementById('sb-nm').textContent = nm;
-  document.getElementById('tb-date').textContent = new Date().toLocaleDateString('en-IN', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
-
-  const ref = doc(db, 'users', u.uid);
-  onSnapshot(ref, snap => {
-    if (!snap.exists()) {
-      showOnboarding();
+// -- Shared public view --
+const shareUid = new URLSearchParams(location.search).get('uid');
+if (!shareUid) {
+  document.getElementById('tracker-scroll').innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted);">Invalid share link.</div>';
+  hideLoader();
+} else {
+  onSnapshot(doc(db, 'users', shareUid), snap => {
+    if (!snap.exists() || !snap.data().shareEnabled) {
+      document.getElementById('tracker-scroll').innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted);">This tracker is not shared or the link is invalid.</div>';
       hideLoader();
       return;
     }
@@ -589,7 +592,10 @@ onAuthStateChanged(auth, u => {
       habits      = d.habits || [];
       completions = d.completions || {};
       startDate   = d.startDate ? new Date(d.startDate) : new Date();
-      shareEnabled= d.shareEnabled || false;
+      const nm = d.displayName || 'User';
+      document.getElementById('sb-av').textContent = nm.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+      document.getElementById('sb-nm').textContent = nm;
+      document.getElementById('tb-date').textContent = 'Shared view · ' + new Date().toLocaleDateString('en-IN', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
       renderAll();
     } catch(e) {
       console.error('Render error:', e);
@@ -599,10 +605,10 @@ onAuthStateChanged(auth, u => {
     }
   }, err => {
     console.error('Firestore error:', err);
-    showToast('Could not load data - check Firestore rules');
+    showToast('Could not load shared tracker');
     hideLoader();
   });
-});
+}
 
 // -- Save --
 async function save() {
@@ -749,11 +755,10 @@ function renderDayBreakdown() {
 // -- Table --
 function renderTable() {
   const days = getPeriodDays();
-  console.log('VIEW:', currentView, 'OFFSET:', periodOffset, 'DAYS:', days.length, 'FIRST:', days[0], 'LAST:', days[days.length-1]);
   const todayStr = today();
   const scroll = document.getElementById('tracker-scroll');
   if (!habits.length) {
-    scroll.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted);">No habits yet. Click <strong style="color:var(--accent)">+ Add Habit</strong> to start.</div>';
+    scroll.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted);">No habits to display.</div>';
     return;
   }
   let html = '<table class="htable"><thead><tr><th class="col-habit">Habit</th>';
@@ -765,14 +770,13 @@ function renderTable() {
   habits.forEach(h => {
     let streak = 0, sd = new Date();
     while (completions[`${h.id}_${fmt(sd)}`]) { streak++; sd = addDays(sd, -1); }
-    html += `<tr class="hrow" data-hid="${h.id}"><td class="col-habit"><div class="habit-name-wrap"><span class="habit-name-text">${h.name}</span>${streak > 0 ? `<span class="streak-chip">${streak}d</span>` : ''}<span class="habit-actions"><button onclick="openEdit('${h.id}')">✏️</button><button onclick="deleteHabit('${h.id}')">🗑️</button></span></div></td>`;
+    html += `<tr class="hrow" data-hid="${h.id}"><td class="col-habit"><div class="habit-name-wrap"><span class="habit-name-text">${h.name}</span>${streak > 0 ? `<span class="streak-chip">${streak}d</span>` : ''}</div></td>`;
     let total = 0;
     days.forEach(d => {
       const ds = fmt(d), isToday = ds === todayStr, isFuture = ds > todayStr;
       const done = !!completions[`${h.id}_${ds}`];
       if (done) total++;
-      const clickAttr = isFuture ? '' : `onclick="toggle('${h.id}','${ds}',this)"`;
-      html += `<td><div class="cbox ${done?'on':''} ${isToday?'today-col':''} ${isFuture?'future':''}" ${clickAttr}>${done?'v':''}</div></td>`;
+      html += `<td><div class="cbox ${done?'on':''} ${isToday?'today-col':''} ${isFuture?'future':''}">${done?'v':''}</div></td>`;
     });
     const pct = days.length ? Math.round(total / days.length * 100) : 0;
     html += `<td class="col-total"><div class="total-wrap"><div class="total-track"><div class="total-fill" style="width:${pct}%"></div></div><span class="total-num">${total}/${days.length}</span></div></td></tr>`;

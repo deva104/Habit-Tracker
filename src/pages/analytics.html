@@ -9,23 +9,25 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --bg:       #060910;
-      --surface:  #0f1520;
-      --surface2: #141b28;
-      --surface3: #1a2235;
-      --border:   rgba(255,255,255,0.07);
-      --border2:  rgba(255,255,255,0.13);
-      --accent:   #4ade80;
-      --accent2:  #22c55e;
-      --accentd:  #16a34a;
-      --blue:     #3b82f6;
-      --blue2:    #60a5fa;
-      --amber:    #f59e0b;
-      --red:      #f87171;
-      --purple:   #a78bfa;
-      --text:     #f1f5f9;
-      --muted:    #64748b;
-      --muted2:   #94a3b8;
+      --bg:#14161A;
+      --bg2:#101216;
+      --surface:#1C1F26;
+      --surface2:#232730;
+      --surface3:#2A2E37;
+      --border:rgba(255,255,255,0.07);
+      --border2:rgba(255,255,255,0.12);
+      --accent:#E0A458;
+      --accent2:#C8843A;
+      --accentd:#A86C2C;
+      --blue:#E0A458;
+      --blue2:#E0A458;
+      --amber:#E0A458;
+      --red:#E06A52;
+      --error:#E06A52;
+      --purple:#E0A458;
+      --text:#E6E8EB;
+      --muted:#8A909B;
+      --muted2:#A7ADB8;
       --sidebar-w: 240px;
     }
     body { font-family: 'Cabinet Grotesk', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
@@ -51,27 +53,27 @@
     .nav-sec { font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);padding:10px 10px 6px;margin-top:4px; }
     .nav-link { display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:10px;color:var(--muted2);font-size:14px;font-weight:700;cursor:pointer;text-decoration:none;transition:all 0.15s;position:relative;border:1px solid transparent; }
     .nav-link:hover { background:var(--surface2);color:var(--text); }
-    .nav-link.active { background:rgba(74,222,128,0.1);color:var(--accent);border-color:rgba(74,222,128,0.15); }
+    .nav-link.active { background:rgba(224,164,88,0.14);color:var(--accent);border-color:rgba(224,164,88,0.2); }
     .nav-link.active::before { content:'';position:absolute;left:-1px;top:20%;bottom:20%;width:3px;background:var(--accent2);border-radius:0 3px 3px 0; }
-    .nav-icon { font-size:16px;width:20px;text-align:center;flex-shrink:0; }
+    .nav-icon { display:flex;align-items:center;justify-content:center;width:20px;flex-shrink:0;color:inherit; }
     .sb-bottom { padding:14px 12px;border-top:1px solid var(--border); }
     .user-card { display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;transition:background 0.15s; }
     .user-card:hover { background:var(--surface3); }
-    .avatar { width:32px;height:32px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,#1e3a5f,var(--accentd));display:grid;place-items:center;font-weight:800;font-size:12px;border:2px solid rgba(74,222,128,0.2); }
+    .avatar { width:32px;height:32px;border-radius:50%;flex-shrink:0;background:var(--surface3);display:grid;place-items:center;font-weight:800;font-size:12px;border:2px solid rgba(224,164,88,0.25); }
     .uname { font-size:13px;font-weight:700;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
     .logout-ico { font-size:14px;color:var(--muted);transition:color 0.15s; }
     .user-card:hover .logout-ico { color:var(--red); }
 
     /* Main */
     .main { margin-left:var(--sidebar-w);min-height:100vh; }
-    .topbar { display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:60px;background:rgba(6,9,16,0.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:40; }
+    .topbar { display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:60px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:40; }
     .topbar h1 { font-family:'Clash Display',sans-serif;font-size:18px;font-weight:600;letter-spacing:-0.3px; }
     .topbar .sub { font-size:11px;color:var(--muted);margin-top:1px; }
 
     /* Range selector */
     .range-tabs { display:flex;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:3px;gap:2px; }
     .rtab { padding:7px 14px;border:none;border-radius:7px;background:transparent;color:var(--muted);font-family:'Cabinet Grotesk',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.15s; }
-    .rtab.active { background:linear-gradient(135deg,rgba(74,222,128,0.15),rgba(74,222,128,0.08));color:var(--accent);border:1px solid rgba(74,222,128,0.2); }
+    .rtab.active { background:rgba(224,164,88,0.14);color:var(--accent);border:1px solid rgba(224,164,88,0.2); }
     .rtab:hover:not(.active) { color:var(--text); }
 
     /* Content */
@@ -82,17 +84,17 @@
     .sec-title::after { content:'';flex:1;height:1px;background:var(--border); }
 
     /* Card */
-    .card { background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 22px; }
+    .card { background:#18181A;border:1px solid var(--border);border-radius:14px;padding:20px 22px; }
     .card-title { font-family:'Clash Display',sans-serif;font-size:14px;font-weight:600;margin-bottom:16px;color:var(--text); }
 
     /* ── Overview KPIs ── */
     .kpi-grid { display:grid;grid-template-columns:repeat(5,1fr);gap:12px; }
-    .kpi { background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px;transition:transform 0.15s,border-color 0.15s; }
+    .kpi { background:#1F232B;border:1px solid var(--border);border-radius:14px;padding:18px 20px;transition:transform 0.15s,border-color 0.15s; }
     .kpi:hover { transform:translateY(-2px);border-color:var(--border2); }
     .kpi-label { font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;color:var(--muted);margin-bottom:7px; }
     .kpi-val { font-family:'Clash Display',sans-serif;font-size:30px;font-weight:700;line-height:1;margin-bottom:4px; }
     .kpi-sub { font-size:12px;color:var(--muted2); }
-    .kpi-val.green { color:var(--accent2); }
+    .kpi-val.green { color:var(--accent); }
     .kpi-val.amber { color:var(--amber); }
     .kpi-val.blue  { color:var(--blue2); }
     .kpi-val.purple{ color:var(--purple); }
@@ -100,12 +102,12 @@
 
     /* ── Charts row ── */
     .charts-row { display:grid;grid-template-columns:1fr 1fr;gap:14px; }
-    .chart-wrap { height:200px; }
-    .chart-wrap-tall { height:240px; }
+    .chart-wrap { height:200px;background:#1F232B;border-radius:10px;padding:8px; }
+    .chart-wrap-tall { height:240px;background:#1F232B;border-radius:10px;padding:8px; }
 
     /* ── Habit leaderboard ── */
     .leaderboard { display:flex;flex-direction:column;gap:8px; }
-    .lb-row { display:flex;align-items:center;gap:14px;padding:12px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;transition:border-color 0.15s,transform 0.15s; }
+    .lb-row { display:flex;align-items:center;gap:14px;padding:12px 16px;background:#1F232B;border:1px solid var(--border);border-radius:12px;transition:border-color 0.15s,transform 0.15s; }
     .lb-row:hover { border-color:var(--border2);transform:translateX(3px); }
     .lb-rank { font-family:'Clash Display',sans-serif;font-size:18px;font-weight:700;width:28px;text-align:center;flex-shrink:0; }
     .lb-rank.gold   { color:#f59e0b; }
@@ -113,17 +115,17 @@
     .lb-rank.bronze { color:#cd7c4a; }
     .lb-rank.normal { color:var(--muted); }
     .lb-name { flex:1;font-size:14px;font-weight:700; }
-    .lb-streak { display:flex;align-items:center;gap:5px;font-size:13px;font-weight:700;color:var(--amber);background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);padding:3px 10px;border-radius:99px; }
+    .lb-streak { display:flex;align-items:center;gap:5px;font-size:13px;font-weight:700;color:#E0A458;background:rgba(224,164,88,0.14);border:1px solid rgba(224,164,88,0.22);padding:3px 10px;border-radius:99px;box-shadow:none;background-image:none; }
     .lb-bar-wrap { width:140px; }
     .lb-bar-track { height:6px;background:rgba(255,255,255,0.07);border-radius:3px;overflow:hidden; }
-    .lb-bar-fill { height:100%;border-radius:3px;transition:width 0.6s cubic-bezier(0.16,1,0.3,1); }
+    .lb-bar-fill { height:100%;border-radius:3px;transition:width 0.6s cubic-bezier(0.16,1,0.3,1);box-shadow:none;background-image:none; }
     .lb-pct { font-family:'Clash Display',sans-serif;font-size:14px;font-weight:700;min-width:40px;text-align:right;color:var(--muted2); }
     .lb-record { font-size:11px;color:var(--muted);display:flex;align-items:center;gap:4px; }
 
     /* ── Best day of week ── */
     .dow-grid { display:grid;grid-template-columns:repeat(7,1fr);gap:8px; }
-    .dow-item { background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 8px;text-align:center;transition:border-color 0.15s,transform 0.15s; }
-    .dow-item.best { border-color:rgba(74,222,128,0.3);background:rgba(74,222,128,0.06); }
+    .dow-item { background:#1F232B;border:1px solid var(--border);border-radius:10px;padding:12px 8px;text-align:center;transition:border-color 0.15s,transform 0.15s; }
+    .dow-item.best { border-color:rgba(224,164,88,0.3);background:rgba(224,164,88,0.08); }
     .dow-item:hover { transform:translateY(-2px); }
     .dow-name { font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);margin-bottom:8px; }
     .dow-bar-wrap { height:60px;display:flex;align-items:flex-end;justify-content:center;margin-bottom:6px; }
@@ -137,13 +139,13 @@
     .con-row { display:flex;align-items:center;gap:14px; }
     .con-name { width:150px;font-size:13px;font-weight:700;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
     .con-track { flex:1;height:8px;background:rgba(255,255,255,0.06);border-radius:4px;overflow:hidden; }
-    .con-fill { height:100%;border-radius:4px;transition:width 0.6s cubic-bezier(0.16,1,0.3,1); }
+    .con-fill { height:100%;border-radius:4px;transition:width 0.6s cubic-bezier(0.16,1,0.3,1);box-shadow:none;background-image:none; }
     .con-pct { font-family:'Clash Display',sans-serif;font-size:13px;font-weight:700;min-width:42px;text-align:right; }
     .con-streak { font-size:11px;color:var(--muted);min-width:60px;text-align:right; }
 
     /* ── Personal records ── */
     .records-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px; }
-    .rec-card { background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;transition:transform 0.15s,border-color 0.15s; }
+    .rec-card { background:#1F232B;border:1px solid var(--border);border-radius:12px;padding:14px 16px;transition:transform 0.15s,border-color 0.15s; }
     .rec-card:hover { transform:translateY(-2px);border-color:var(--border2); }
     .rec-habit { font-size:12px;font-weight:700;color:var(--muted2);margin-bottom:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
     .rec-val { font-family:'Clash Display',sans-serif;font-size:24px;font-weight:700;color:var(--amber); }
@@ -160,7 +162,7 @@
     .mob-menu-btn.open span:nth-child(1) { transform:translateY(7px) rotate(45deg); }
     .mob-menu-btn.open span:nth-child(2) { opacity:0; }
     .mob-menu-btn.open span:nth-child(3) { transform:translateY(-7px) rotate(-45deg); }
-    .mob-overlay { display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);z-index:90; }
+    .mob-overlay { display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:90; }
     .mob-overlay.show { display:block; }
 
     @media (max-width:1100px) { .kpi-grid { grid-template-columns:repeat(3,1fr); } }
@@ -214,10 +216,10 @@
   </div>
   <nav class="sb-nav">
     <div class="nav-sec">Main</div>
-    <a class="nav-link" href="dashboard.html"><span class="nav-icon">🏠</span> Dashboard</a>
-    <a class="nav-link active"><span class="nav-icon">📊</span> Analytics</a>
+    <a class="nav-link" href="dashboard.html"><span class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5"/><path d="M5 10v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V10"/><path d="M9 21v-6h6v6"/></svg></span> Dashboard</a>
+    <a class="nav-link active"><span class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="5"/><rect x="12" y="8" width="3" height="9"/><rect x="17" y="5" width="3" height="12"/></svg></span> Analytics</a>
     <div class="nav-sec">Tools</div>
-    <a class="nav-link" style="opacity:0.4;pointer-events:none"><span class="nav-icon">📤</span> Export <span style="margin-left:auto;background:var(--accentd);color:white;font-size:10px;font-weight:800;padding:2px 7px;border-radius:99px;">Soon</span></a>
+    <a class="nav-link" href="dashboard.html?export=1"><span class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M8 11l4 4 4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg></span> Export</a>
     <a class="nav-link" onclick="doLogout()"><span class="nav-icon">↩</span> Sign Out</a>
   </nav>
   <div class="sb-bottom">
@@ -252,8 +254,8 @@
       <div class="kpi"><div class="kpi-label">Overall Rate</div><div class="kpi-val green" id="k-overall">—</div><div class="kpi-sub">habits completed</div></div>
       <div class="kpi"><div class="kpi-label">Best Streak</div><div class="kpi-val amber" id="k-streak">—</div><div class="kpi-sub" id="k-streak-habit">days in a row</div></div>
       <div class="kpi"><div class="kpi-label">Perfect Days</div><div class="kpi-val green" id="k-perfect">—</div><div class="kpi-sub">100% completion</div></div>
-      <div class="kpi"><div class="kpi-label">Total Checkmarks</div><div class="kpi-val blue" id="k-total">—</div><div class="kpi-sub">habits done</div></div>
-      <div class="kpi"><div class="kpi-label">Active Habits</div><div class="kpi-val purple" id="k-habits">—</div><div class="kpi-sub">being tracked</div></div>
+      <div class="kpi"><div class="kpi-label">Total Checkmarks</div><div class="kpi-val amber" id="k-total">—</div><div class="kpi-sub">habits done</div></div>
+      <div class="kpi"><div class="kpi-label">Active Habits</div><div class="kpi-val amber" id="k-habits">—</div><div class="kpi-sub">being tracked</div></div>
     </div>
 
     <!-- Charts row -->
@@ -310,6 +312,10 @@ function fmt(d) { return d.toISOString().slice(0,10); }
 function addDays(d,n) { const r=new Date(d); r.setDate(r.getDate()+n); return r; }
 function today() { return fmt(new Date()); }
 
+function dataColor(v) {
+  return v >= 60 ? '#E0A458' : v >= 30 ? '#B5854A' : '#7A6440';
+}
+
 // -- Auth --
 onAuthStateChanged(auth, u => {
   if (!u) { location.replace('login.html'); return; }
@@ -362,7 +368,7 @@ function getRangeLabel() {
 
 // -- Render All --
 function renderAll() {
-  document.getElementById('tb-sub').textContent = getRangeLabel() + ' ? ' + new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('tb-sub').textContent = getRangeLabel() + ' · ' + new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   renderKPIs();
   renderTrendChart();
   renderBarChart();
@@ -384,8 +390,14 @@ function renderKPIs() {
   });
 
   const overallPct = totalPossible ? Math.round(totalDone/totalPossible*100) : 0;
-  document.getElementById('k-overall').textContent  = overallPct+'%';
-  document.getElementById('k-perfect').textContent  = perfectDays;
+  const overallEl = document.getElementById('k-overall');
+  overallEl.textContent = overallPct + '%';
+  overallEl.style.color = '#E0A458';
+
+  const perfectEl = document.getElementById('k-perfect');
+  perfectEl.textContent = perfectDays;
+  perfectEl.style.color = perfectDays === 0 ? '#8A909B' : '#E0A458';
+
   document.getElementById('k-total').textContent    = totalDone.toLocaleString();
   document.getElementById('k-habits').textContent   = habits.length;
 
@@ -397,7 +409,7 @@ function renderKPIs() {
     if(streak>bestStreak) { bestStreak=streak; bestHabit=h.name; }
   });
   document.getElementById('k-streak').textContent       = bestStreak;
-  document.getElementById('k-streak-habit').textContent = bestStreak ? `fire ${bestHabit}` : 'days in a row';
+  document.getElementById('k-streak-habit').textContent = bestStreak ? bestHabit : 'days in a row';
 }
 
 // -- Trend Chart --
@@ -431,12 +443,12 @@ function renderTrendChart() {
     type:'line',
     data:{ labels, datasets:[{
       data,
-      borderColor:'#22c55e',
+      borderColor:'#E0A458',
       backgroundColor: ctx => {
         const g=ctx.chart.ctx.createLinearGradient(0,0,0,200);
-        g.addColorStop(0,'rgba(34,197,94,0.2)'); g.addColorStop(1,'rgba(34,197,94,0)'); return g;
+        g.addColorStop(0,'rgba(224,164,88,0.18)'); g.addColorStop(1,'rgba(224,164,88,0)'); return g;
       },
-      borderWidth:2.5, pointBackgroundColor:'#22c55e', pointRadius:3, pointHoverRadius:6,
+      borderWidth:2.5, pointBackgroundColor:'#E0A458', pointRadius:3, pointHoverRadius:6,
       tension:0.4, fill:true
     }]},
     options:{
@@ -459,7 +471,7 @@ function renderBarChart() {
     return days.length ? Math.round(done/days.length*100) : 0;
   });
 
-  const colors = data.map(v => v>=80?'rgba(74,222,128,0.8)': v>=50?'rgba(74,222,128,0.5)': v>=25?'rgba(245,158,11,0.6)':'rgba(248,113,113,0.6)');
+  const colors = data.map(v => dataColor(v));
 
   if (barChart) { barChart.data.labels=labels; barChart.data.datasets[0].data=data; barChart.data.datasets[0].backgroundColor=colors; barChart.update('none'); return; }
 
@@ -498,7 +510,7 @@ function renderDOW() {
     const pct = dowAvg[i];
     const isBest = i===bestDow && pct>0;
     const barH = maxDow ? Math.max(4, Math.round(pct/maxDow*60)) : 4;
-    const barColor = isBest ? 'var(--accent2)' : pct>=50 ? 'var(--blue)' : 'var(--muted)';
+    const barColor = pct === 0 ? 'var(--muted)' : dataColor(pct);
     return `<div class="dow-item ${isBest?'best':''}">
       <div class="dow-name">${name}</div>
       <div class="dow-bar-wrap"><div class="dow-bar" style="height:${barH}px;background:${barColor}"></div></div>
@@ -527,12 +539,12 @@ function renderLeaderboard() {
   lb.innerHTML = ranked.map((h,i) => {
     const rankClass = i===0?'gold': i===1?'silver': i===2?'bronze':'normal';
     const rankLabel = i===0?'#1': i===1?'#2': i===2?'#3': `#${i+1}`;
-    const barColor  = h.pct>=80?'var(--accent2)': h.pct>=50?'var(--blue)': h.pct>=25?'var(--amber)':'var(--red)';
+    const barColor  = dataColor(h.pct);
     const barW      = maxPct ? Math.round(h.pct/maxPct*100) : 0;
     return `<div class="lb-row">
       <div class="lb-rank ${rankClass}">${rankLabel}</div>
       <div class="lb-name">${h.name}</div>
-      ${h.streak>0?`<div class="lb-streak">fire ${h.streak}d</div>`:'<div style="width:60px"></div>'}
+      ${h.streak>0?`<div class="lb-streak">${h.streak}d</div>`:'<div style="width:60px"></div>'}
       <div class="lb-bar-wrap">
         <div class="lb-bar-track"><div class="lb-bar-fill" style="width:${barW}%;background:${barColor}"></div></div>
       </div>
@@ -560,7 +572,7 @@ function renderConsistency() {
   }).sort((a,b)=>b.consistency-a.consistency);
 
   list.innerHTML = scored.map(h => {
-    const color = h.consistency>=70?'var(--accent2)': h.consistency>=40?'var(--blue)': h.consistency>=20?'var(--amber)':'var(--red)';
+    const color = dataColor(h.consistency);
     return `<div class="con-row">
       <div class="con-name" title="${h.name}">${h.name}</div>
       <div class="con-track"><div class="con-fill" style="width:${h.consistency}%;background:${color}"></div></div>

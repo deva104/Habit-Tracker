@@ -9,19 +9,24 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:        #060910;
-      --surface:   rgba(255,255,255,0.04);
-      --surface2:  rgba(255,255,255,0.07);
-      --border:    rgba(255,255,255,0.09);
-      --border2:   rgba(255,255,255,0.16);
-      --accent:    #4ade80;
-      --accent2:   #22c55e;
-      --blue:      #3b82f6;
-      --text:      #f1f5f9;
-      --muted:     #64748b;
-      --muted2:    #94a3b8;
-      --error:     #f87171;
-      --radius:    16px;
+      --bg:#14161A;
+      --bg2:#101216;
+      --surface:#1C1F26;
+      --surface2:#232730;
+      --surface3:#2A2E37;
+      --border:rgba(255,255,255,0.07);
+      --border2:rgba(255,255,255,0.12);
+      --accent:#E0A458;
+      --accent2:#C8843A;
+      --accentd:#A86C2C;
+      --blue:#E0A458;
+      --amber:#E0A458;
+      --red:#E06A52;
+      --error:#E06A52;
+      --text:#E6E8EB;
+      --muted:#8A909B;
+      --muted2:#A7ADB8;
+      --radius:16px;
     }
 
     html, body { height: 100%; }
@@ -38,48 +43,6 @@
       position: relative;
     }
 
-    /* ── Animated canvas bg ── */
-    #bg-canvas {
-      position: fixed;
-      inset: 0;
-      z-index: 0;
-      pointer-events: none;
-    }
-
-    /* ── Gradient orbs ── */
-    .orb {
-      position: fixed;
-      border-radius: 50%;
-      filter: blur(80px);
-      pointer-events: none;
-      z-index: 0;
-      animation: orbFloat 8s ease-in-out infinite;
-    }
-    .orb-1 {
-      width: 520px; height: 520px;
-      background: radial-gradient(circle, rgba(74,222,128,0.12) 0%, transparent 70%);
-      top: -180px; left: -160px;
-      animation-delay: 0s;
-    }
-    .orb-2 {
-      width: 420px; height: 420px;
-      background: radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 70%);
-      bottom: -140px; right: -120px;
-      animation-delay: -4s;
-    }
-    .orb-3 {
-      width: 280px; height: 280px;
-      background: radial-gradient(circle, rgba(74,222,128,0.07) 0%, transparent 70%);
-      top: 40%; left: 60%;
-      animation-delay: -2s;
-    }
-
-    @keyframes orbFloat {
-      0%, 100% { transform: translate(0, 0) scale(1); }
-      33%       { transform: translate(20px, -30px) scale(1.05); }
-      66%       { transform: translate(-15px, 20px) scale(0.95); }
-    }
-
     /* ── Layout ── */
     .page-wrap {
       position: relative;
@@ -94,7 +57,6 @@
       border-radius: 24px;
       overflow: hidden;
       border: 1px solid var(--border);
-      box-shadow: 0 40px 120px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.03);
       animation: pageIn 0.7s cubic-bezier(0.16,1,0.3,1) both;
     }
 
@@ -105,7 +67,7 @@
 
     /* ── Left panel ── */
     .left-panel {
-      background: linear-gradient(145deg, rgba(74,222,128,0.06) 0%, rgba(6,9,16,0.98) 50%, rgba(59,130,246,0.06) 100%);
+      background: var(--surface);
       padding: 52px 48px;
       display: flex;
       flex-direction: column;
@@ -113,13 +75,6 @@
       position: relative;
       overflow: hidden;
       border-right: 1px solid var(--border);
-    }
-
-    .left-panel::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.015'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
     }
 
     .brand {
@@ -130,13 +85,13 @@
 
     .brand-mark {
       width: 42px; height: 42px;
-      background: linear-gradient(135deg, var(--accent2), #16a34a);
+      background: #E0A458;
       border-radius: 12px;
       display: grid;
       place-items: center;
     }
 
-    .brand-mark svg { width: 22px; height: 22px; stroke: white; stroke-width: 2.5; fill: none; }
+    .brand-mark svg { width: 22px; height: 22px; stroke: #2A1B06; stroke-width: 2.5; fill: none; }
 
     .brand-name {
       font-family: 'Clash Display', sans-serif;
@@ -158,7 +113,7 @@
       margin-bottom: 18px;
     }
 
-    .left-headline .hl { color: var(--accent); }
+    .left-headline .hl { color: #E0A458; }
 
     .left-sub {
       color: var(--muted2);
@@ -192,8 +147,9 @@
     .feature-dot {
       width: 28px; height: 28px; border-radius: 8px; flex-shrink: 0;
       display: grid; place-items: center; font-size: 14px;
-      background: rgba(74,222,128,0.1);
-      border: 1px solid rgba(74,222,128,0.2);
+      background: rgba(224,164,88,0.14);
+      border: 1px solid rgba(224,164,88,0.22);
+      color: #E0A458;
     }
 
     .left-footer {
@@ -203,7 +159,7 @@
 
     /* ── Right panel (form) ── */
     .right-panel {
-      background: rgba(12,16,24,0.97);
+      background: var(--surface2);
       padding: 48px 44px;
       display: flex;
       flex-direction: column;
@@ -246,9 +202,9 @@
     }
 
     .tab.active {
-      background: linear-gradient(135deg, rgba(74,222,128,0.15), rgba(74,222,128,0.08));
-      color: var(--accent);
-      border: 1px solid rgba(74,222,128,0.2);
+      background: rgba(224,164,88,0.12);
+      color: #E0A458;
+      border: 1px solid #E0A458;
     }
 
     /* Fields */
@@ -277,9 +233,9 @@
     }
 
     .field input:focus {
-      border-color: rgba(74,222,128,0.4);
+      border-color: rgba(224,164,88,0.4);
       background: var(--surface2);
-      box-shadow: 0 0 0 3px rgba(74,222,128,0.06);
+      box-shadow: none;
     }
 
     .field input::placeholder { color: var(--muted); }
@@ -287,8 +243,8 @@
     /* Error */
     .error-box {
       display: none;
-      background: rgba(248,113,113,0.08);
-      border: 1px solid rgba(248,113,113,0.25);
+      background: rgba(224,106,82,0.1);
+      border: 1px solid rgba(224,106,82,0.25);
       border-radius: 10px;
       padding: 11px 14px;
       color: var(--error);
@@ -303,10 +259,10 @@
     .btn-primary {
       width: 100%;
       padding: 13px;
-      background: linear-gradient(135deg, var(--accent2), #15803d);
+      background: #E0A458;
       border: none;
       border-radius: 10px;
-      color: #fff;
+      color: #2A1B06;
       font-family: 'Clash Display', sans-serif;
       font-size: 15px; font-weight: 600;
       letter-spacing: 0.3px;
@@ -314,21 +270,12 @@
       margin-top: 4px;
       position: relative;
       overflow: hidden;
-      transition: transform 0.15s, box-shadow 0.15s;
-      box-shadow: 0 4px 24px rgba(34,197,94,0.25);
+      transition: transform 0.15s, background 0.15s;
+      box-shadow: none;
+      background-image: none;
     }
 
-    .btn-primary::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(135deg, rgba(255,255,255,0.12), transparent);
-      opacity: 0;
-      transition: opacity 0.2s;
-    }
-
-    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 32px rgba(34,197,94,0.35); }
-    .btn-primary:hover::before { opacity: 1; }
+    .btn-primary:hover { transform: translateY(-1px); background: #C8843A; box-shadow: none; }
     .btn-primary:active { transform: translateY(0); }
     .btn-primary:disabled { opacity: 0.6; pointer-events: none; }
 
@@ -336,8 +283,8 @@
     .btn-primary .btn-spinner {
       display: none;
       width: 16px; height: 16px;
-      border: 2px solid rgba(255,255,255,0.3);
-      border-top-color: white;
+      border: 2px solid rgba(42,27,6,0.25);
+      border-top-color: #2A1B06;
       border-radius: 50%;
       animation: spin 0.6s linear infinite;
       margin: 0 auto;
@@ -398,10 +345,6 @@
   </style>
 </head>
 <body>
-
-<div class="orb orb-1"></div>
-<div class="orb orb-2"></div>
-<div class="orb orb-3"></div>
 
 <div class="page-wrap">
 
