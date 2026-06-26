@@ -290,7 +290,7 @@
 
     <!-- Personal Records -->
     <div class="card">
-      <div class="card-title">🏆 Personal Records — Longest Streak Ever</div>
+      <div class="card-title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:7px"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M7 6H4v1a3 3 0 0 0 3 3"/><path d="M17 6h3v1a3 3 0 0 0-3 3"/></svg>Personal Records — Longest Streak Ever</div>
       <div class="records-grid" id="records-grid"></div>
     </div>
 
@@ -311,6 +311,44 @@ const DAY_NAMES   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 function fmt(d) { return d.toISOString().slice(0,10); }
 function addDays(d,n) { const r=new Date(d); r.setDate(r.getDate()+n); return r; }
 function today() { return fmt(new Date()); }
+
+function habitStart(h) {
+  return h.startDate ? h.startDate : '2000-01-01';
+}
+
+function habitActiveOn(h, ds) {
+  return ds >= habitStart(h) && ds <= today();
+}
+
+function habitStreak(h) {
+  let s = 0, d = new Date();
+  const start = habitStart(h);
+  const td = today();
+  while (true) {
+    const ds = fmt(d);
+    if (ds < start || ds > td) break;
+    if (!completions[`${h.id}_${ds}`]) break;
+    s++;
+    d = addDays(d, -1);
+  }
+  return s;
+}
+
+function habitRateInDays(h, days) {
+  const eligible = days.filter(d => habitActiveOn(h, fmt(d)));
+  if (!eligible.length) return { done: 0, total: 0, pct: 0 };
+  const done = eligible.filter(d => completions[`${h.id}_${fmt(d)}`]).length;
+  return { done, total: eligible.length, pct: Math.round(done / eligible.length * 100) };
+}
+
+function dayCompletionStats(d) {
+  const ds = fmt(d);
+  if (ds > today()) return { done: 0, total: 0, pct: 0 };
+  const active = habits.filter(h => habitActiveOn(h, ds));
+  if (!active.length) return { done: 0, total: 0, pct: 0 };
+  const done = active.filter(h => completions[`${h.id}_${ds}`]).length;
+  return { done, total: active.length, pct: Math.round(done / active.length * 100) };
+}
 
 function dataColor(v) {
   return v >= 60 ? '#E0A458' : v >= 30 ? '#B5854A' : '#7A6440';
@@ -381,12 +419,17 @@ function renderAll() {
 // -- KPIs --
 function renderKPIs() {
   const days = getRangeDays();
-  let totalDone=0, totalPossible=days.length*habits.length, perfectDays=0;
+  const td = today();
+  let totalDone = 0, totalPossible = 0, perfectDays = 0;
 
   days.forEach(d => {
-    const done = habits.filter(h=>completions[`${h.id}_${fmt(d)}`]).length;
+    const ds = fmt(d);
+    if (ds > td) return;
+    const active = habits.filter(h => habitActiveOn(h, ds));
+    const done = active.filter(h => completions[`${h.id}_${ds}`]).length;
     totalDone += done;
-    if(habits.length && done === habits.length) perfectDays++;
+    totalPossible += active.length;
+    if (active.length && done === active.length) perfectDays++;
   });
 
   const overallPct = totalPossible ? Math.round(totalDone/totalPossible*100) : 0;
@@ -404,9 +447,8 @@ function renderKPIs() {
   // Best current streak across all habits
   let bestStreak=0, bestHabit='';
   habits.forEach(h => {
-    let streak=0, d=new Date();
-    while(completions[`${h.id}_${fmt(d)}`]) { streak++; d=addDays(d,-1); }
-    if(streak>bestStreak) { bestStreak=streak; bestHabit=h.name; }
+    const streak = habitStreak(h);
+    if (streak > bestStreak) { bestStreak = streak; bestHabit = h.name; }
   });
   document.getElementById('k-streak').textContent       = bestStreak;
   document.getElementById('k-streak-habit').textContent = bestStreak ? bestHabit : 'days in a row';
@@ -421,15 +463,23 @@ function renderTrendChart() {
     // Daily points
     days.forEach(d => {
       labels.push(d.toLocaleDateString('en-IN',{day:'numeric',month:'short'}));
-      const done = habits.filter(h=>completions[`${h.id}_${fmt(d)}`]).length;
-      data.push(habits.length ? Math.round(done/habits.length*100) : 0);
+      data.push(dayCompletionStats(d).pct);
     });
   } else {
     // Weekly averages for 90d/365d
     for(let i=0;i<days.length;i+=7) {
       const week = days.slice(i, i+7);
-      let wd=0, wt=week.length*habits.length;
-      week.forEach(d => habits.forEach(h=>{ if(completions[`${h.id}_${fmt(d)}`]) wd++; }));
+      let wd=0, wt=0;
+      week.forEach(d => {
+        const ds = fmt(d);
+        if (ds > today()) return;
+        habits.forEach(h => {
+          if (habitActiveOn(h, ds)) {
+            wt++;
+            if (completions[`${h.id}_${ds}`]) wd++;
+          }
+        });
+      });
       labels.push(week[0].toLocaleDateString('en-IN',{day:'numeric',month:'short'}));
       data.push(wt ? Math.round(wd/wt*100) : 0);
     }
@@ -466,10 +516,7 @@ function renderTrendChart() {
 function renderBarChart() {
   const days = getRangeDays();
   const labels = habits.map(h=>h.name.length>12?h.name.slice(0,12)+'...':h.name);
-  const data   = habits.map(h => {
-    const done = days.filter(d=>completions[`${h.id}_${fmt(d)}`]).length;
-    return days.length ? Math.round(done/days.length*100) : 0;
-  });
+  const data   = habits.map(h => habitRateInDays(h, days).pct);
 
   const colors = data.map(v => dataColor(v));
 
@@ -495,9 +542,12 @@ function renderDOW() {
   const dowTotals = Array(7).fill(0), dowCounts = Array(7).fill(0);
 
   days.forEach(d => {
+    const ds = fmt(d);
+    if (ds > today()) return;
+    const stats = dayCompletionStats(d);
+    if (!stats.total) return;
     const dow = d.getDay();
-    const done = habits.filter(h=>completions[`${h.id}_${fmt(d)}`]).length;
-    dowTotals[dow] += habits.length ? done/habits.length*100 : 0;
+    dowTotals[dow] += stats.pct;
     dowCounts[dow]++;
   });
 
@@ -527,11 +577,8 @@ function renderLeaderboard() {
   if (!habits.length) { lb.innerHTML=`<div class="empty"><div class="big">[clipboard]</div>No habits yet. Add some from the dashboard.</div>`; return; }
 
   const ranked = habits.map(h => {
-    const done  = days.filter(d=>completions[`${h.id}_${fmt(d)}`]).length;
-    const pct   = days.length ? Math.round(done/days.length*100) : 0;
-    let streak=0, sd=new Date();
-    while(completions[`${h.id}_${fmt(sd)}`]) { streak++; sd=addDays(sd,-1); }
-    return { name:h.name, done, pct, streak };
+    const { done, pct } = habitRateInDays(h, days);
+    return { name:h.name, done, pct, streak: habitStreak(h) };
   }).sort((a,b)=>b.pct-a.pct);
 
   const maxPct = ranked[0]?.pct || 1;
@@ -561,13 +608,14 @@ function renderConsistency() {
 
   // Consistency = longest run / total days (penalises gaps)
   const scored = habits.map(h => {
+    const eligible = days.filter(d => habitActiveOn(h, fmt(d)));
     let done=0, longestRun=0, currentRun=0;
-    days.forEach(d => {
+    eligible.forEach(d => {
       if(completions[`${h.id}_${fmt(d)}`]) { done++; currentRun++; longestRun=Math.max(longestRun,currentRun); }
       else currentRun=0;
     });
-    const pct       = days.length ? Math.round(done/days.length*100) : 0;
-    const consistency = days.length ? Math.round(longestRun/days.length*100) : 0;
+    const pct       = eligible.length ? Math.round(done/eligible.length*100) : 0;
+    const consistency = eligible.length ? Math.round(longestRun/eligible.length*100) : 0;
     return { name:h.name, pct, consistency, longestRun };
   }).sort((a,b)=>b.consistency-a.consistency);
 
@@ -589,9 +637,11 @@ function renderRecords() {
 
   // Find longest EVER streak per habit (scan all completions)
   const records = habits.map(h => {
+    const start = habitStart(h);
     const keys = Object.keys(completions)
       .filter(k=>k.startsWith(h.id+'_') && completions[k])
       .map(k=>k.split('_')[1])
+      .filter(ds => ds >= start)
       .sort();
 
     let longestEver=0, run=0;

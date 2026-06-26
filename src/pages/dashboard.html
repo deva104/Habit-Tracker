@@ -185,6 +185,7 @@
     }
     .cbox.today-col { border-color:rgba(224,164,88,0.25); }
     .cbox.future { opacity:0.25;cursor:not-allowed;border-color:rgba(255,255,255,0.06); }
+    .cbox.locked { opacity:0.25;cursor:not-allowed;border-color:rgba(255,255,255,0.06); }
     .total-wrap { display:flex;align-items:center;gap:7px;justify-content:flex-end; }
     .total-track { height:5px;width:52px;background:rgba(255,255,255,0.07);border-radius:3px;overflow:hidden; }
     .total-fill { height:100%;background:var(--accent2);border-radius:3px;transition:width 0.3s; }
@@ -453,6 +454,10 @@
   <div class="modal">
     <h2 id="modal-title">Add New Habit</h2>
     <input type="text" id="habit-input" placeholder="e.g. Morning Walk" maxlength="40" />
+    <div id="habit-start-row">
+      <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;color:var(--muted);margin-bottom:6px;">Start date</div>
+      <input type="date" id="habit-start-input" />
+    </div>
     <div class="modal-btns">
       <button class="btn-cancel" onclick="closeModal()">Cancel</button>
       <button class="btn-confirm" onclick="confirmHabit()">Add</button>
@@ -620,6 +625,49 @@ function fmt(d) {
 function today() { return fmt(new Date()); }
 function addDays(d, n) { const r = new Date(d); r.setDate(r.getDate() + n); return r; }
 
+function habitStart(h) {
+  return h.startDate ? h.startDate : '2000-01-01';
+}
+
+function habitActiveOn(h, ds) {
+  return ds >= habitStart(h) && ds <= today();
+}
+
+function habitStreak(h) {
+  let s = 0, d = new Date();
+  const start = habitStart(h);
+  const td = today();
+  while (true) {
+    const ds = fmt(d);
+    if (ds < start || ds > td) break;
+    if (!completions[`${h.id}_${ds}`]) break;
+    s++;
+    d = addDays(d, -1);
+  }
+  return s;
+}
+
+function habitRowTotal(h, days) {
+  let total = 0, eligible = 0;
+  const td = today();
+  days.forEach(d => {
+    const ds = fmt(d);
+    if (ds > td || ds < habitStart(h)) return;
+    eligible++;
+    if (completions[`${h.id}_${ds}`]) total++;
+  });
+  return { total, eligible, pct: eligible ? Math.round(total / eligible * 100) : 0 };
+}
+
+function dayCompletionStats(d) {
+  const ds = fmt(d);
+  if (ds > today()) return { done: 0, total: 0, pct: 0 };
+  const active = habits.filter(h => habitActiveOn(h, ds));
+  if (!active.length) return { done: 0, total: 0, pct: 0 };
+  const done = active.filter(h => completions[`${h.id}_${ds}`]).length;
+  return { done, total: active.length, pct: Math.round(done / active.length * 100) };
+}
+
 function getPeriodDays() {
   const now = new Date();
   if (currentView === 'monthly') {
@@ -655,20 +703,28 @@ function renderAll() {
 // -- Stats --
 function updateStats() {
   const td = today();
-  let todayDone = 0;
-  habits.forEach(h => { if (completions[`${h.id}_${td}`]) todayDone++; });
-  document.getElementById('s-today').textContent     = habits.length ? Math.round(todayDone / habits.length * 100) + '%' : '0%';
-  document.getElementById('s-today-sub').textContent = `${todayDone} of ${habits.length} done`;
+  const activeToday = habits.filter(h => habitActiveOn(h, td));
+  const todayDone = activeToday.filter(h => completions[`${h.id}_${td}`]).length;
+  document.getElementById('s-today').textContent     = activeToday.length ? Math.round(todayDone / activeToday.length * 100) + '%' : '0%';
+  document.getElementById('s-today-sub').textContent = `${todayDone} of ${activeToday.length} done`;
 
   const days = currentView === 'yearly' ? [] : getPeriodDays();
-  let pd = 0, pt = days.length * habits.length;
-  days.forEach(d => habits.forEach(h => { if (completions[`${h.id}_${fmt(d)}`]) pd++; }));
+  let pd = 0, pt = 0;
+  days.forEach(d => {
+    const ds = fmt(d);
+    if (ds > td) return;
+    habits.forEach(h => {
+      if (habitActiveOn(h, ds)) {
+        pt++;
+        if (completions[`${h.id}_${ds}`]) pd++;
+      }
+    });
+  });
   document.getElementById('s-period').textContent = pt ? Math.round(pd / pt * 100) + '%' : '0%';
 
   let bestStreak = 0;
   habits.forEach(h => {
-    let s = 0, d = new Date();
-    while (completions[`${h.id}_${fmt(d)}`]) { s++; d = addDays(d, -1); }
+    const s = habitStreak(h);
     if (s > bestStreak) bestStreak = s;
   });
   document.getElementById('s-streak').textContent = bestStreak;
@@ -683,18 +739,26 @@ function renderChart() {
     const days = getPeriodDays();
     days.forEach(d => {
       labels.push(String(d.getDate()));
-      const done = habits.filter(h => completions[`${h.id}_${fmt(d)}`]).length;
-      data.push(habits.length ? Math.round(done / habits.length * 100) : 0);
+      const { pct } = dayCompletionStats(d);
+      data.push(pct);
     });
     document.getElementById('chart-title').textContent = getPeriodLabel() + ' - Daily Completion';
   } else {
     const yr = new Date().getFullYear() + periodOffset;
+    const td = today();
     for (let m = 0; m < 12; m++) {
       const dim = new Date(yr, m + 1, 0).getDate();
-      let mDone = 0, mTotal = habits.length * dim;
+      let mDone = 0, mTotal = 0;
       for (let d = 1; d <= dim; d++) {
         const day = new Date(yr, m, d);
-        habits.forEach(h => { if (completions[`${h.id}_${fmt(day)}`]) mDone++; });
+        const ds = fmt(day);
+        if (ds > td) continue;
+        habits.forEach(h => {
+          if (habitActiveOn(h, ds)) {
+            mTotal++;
+            if (completions[`${h.id}_${ds}`]) mDone++;
+          }
+        });
       }
       labels.push(MONTH_NAMES[m]);
       data.push(mTotal ? Math.round(mDone / mTotal * 100) : 0);
@@ -720,16 +784,22 @@ function renderChart() {
 function renderBestWorst() {
   if (!habits.length) return;
   const now = new Date();
+  const td = today();
   const counts = habits.map(h => {
-    let n = 0;
-    for (let i = 0; i < 30; i++) { if (completions[`${h.id}_${fmt(addDays(now,-i))}`]) n++; }
-    return { name: h.name, n };
-  }).sort((a, b) => b.n - a.n);
+    let n = 0, denom = 0;
+    for (let i = 0; i < 30; i++) {
+      const ds = fmt(addDays(now, -i));
+      if (ds < habitStart(h) || ds > td) continue;
+      denom++;
+      if (completions[`${h.id}_${ds}`]) n++;
+    }
+    return { name: h.name, n, denom };
+  }).sort((a, b) => (b.denom ? b.n / b.denom : 0) - (a.denom ? a.n / a.denom : 0));
   const best = counts[0], worst = counts[counts.length - 1];
   document.getElementById('best-name').textContent  = best.name;
-  document.getElementById('best-pct').textContent   = Math.round(best.n / 30 * 100) + '% in last 30 days';
+  document.getElementById('best-pct').textContent   = (best.denom ? Math.round(best.n / best.denom * 100) : 0) + '% in last 30 days';
   document.getElementById('worst-name').textContent = worst.name;
-  document.getElementById('worst-pct').textContent  = Math.round(worst.n / 30 * 100) + '% in last 30 days';
+  document.getElementById('worst-pct').textContent  = (worst.denom ? Math.round(worst.n / worst.denom * 100) : 0) + '% in last 30 days';
 }
 
 // -- Day breakdown --
@@ -737,8 +807,9 @@ function renderDayBreakdown() {
   const days = currentView === 'yearly' ? [] : getPeriodDays();
   let d100 = 0, d50 = 0, d0 = 0;
   days.forEach(d => {
-    const done = habits.filter(h => completions[`${h.id}_${fmt(d)}`]).length;
-    const pct = habits.length ? done / habits.length : 0;
+    const { done, total } = dayCompletionStats(d);
+    if (!total) return;
+    const pct = done / total;
     if (pct >= 1) d100++; else if (pct >= 0.5) d50++; else if (pct === 0) d0++;
   });
   document.getElementById('d100').textContent = d100;
@@ -763,19 +834,24 @@ function renderTable() {
   });
   html += '<th class="col-total">Total</th></tr></thead><tbody>';
   habits.forEach(h => {
-    let streak = 0, sd = new Date();
-    while (completions[`${h.id}_${fmt(sd)}`]) { streak++; sd = addDays(sd, -1); }
+    const streak = habitStreak(h);
     html += `<tr class="hrow" data-hid="${h.id}"><td class="col-habit"><div class="habit-name-wrap"><span class="habit-name-text">${h.name}</span>${streak > 0 ? `<span class="streak-chip">${streak}d</span>` : ''}<span class="habit-actions"><button onclick="openEdit('${h.id}')">✏️</button><button onclick="deleteHabit('${h.id}')">🗑️</button></span></div></td>`;
-    let total = 0;
+    let total = 0, eligible = 0;
     days.forEach(d => {
-      const ds = fmt(d), isToday = ds === todayStr, isFuture = ds > todayStr;
+      const ds = fmt(d), isToday = ds === todayStr;
+      const isFuture = ds > todayStr;
+      const isBefore = ds < habitStart(h);
+      const locked = isFuture || isBefore;
       const done = !!completions[`${h.id}_${ds}`];
-      if (done) total++;
-      const clickAttr = isFuture ? '' : `onclick="toggle('${h.id}','${ds}',this)"`;
-      html += `<td><div class="cbox ${done?'on':''} ${isToday?'today-col':''} ${isFuture?'future':''}" ${clickAttr}>${done?'v':''}</div></td>`;
+      if (!locked) {
+        eligible++;
+        if (done) total++;
+      }
+      const clickAttr = locked ? '' : `onclick="toggle('${h.id}','${ds}',this)"`;
+      html += `<td><div class="cbox ${done?'on':''} ${isToday?'today-col':''} ${locked?'future locked':''}" ${clickAttr}>${done?'v':''}</div></td>`;
     });
-    const pct = days.length ? Math.round(total / days.length * 100) : 0;
-    html += `<td class="col-total"><div class="total-wrap"><div class="total-track"><div class="total-fill" style="width:${pct}%"></div></div><span class="total-num">${total}/${days.length}</span></div></td></tr>`;
+    const pct = eligible ? Math.round(total / eligible * 100) : 0;
+    html += `<td class="col-total"><div class="total-wrap"><div class="total-track"><div class="total-fill" style="width:${pct}%"></div></div><span class="total-num">${total}/${eligible}</span></div></td></tr>`;
   });
   html += '</tbody></table>';
   scroll.innerHTML = html;
@@ -795,17 +871,18 @@ window.toggle = function(hid, ds, el) {
 
 function updateRowTotal(hid) {
   const days = getPeriodDays();
+  const h = habits.find(x => x.id === hid);
   const row = document.querySelector(`tr[data-hid="${hid}"]`);
-  if (!row) return;
-  const total = days.filter(d => completions[`${hid}_${fmt(d)}`]).length;
-  const pct = days.length ? Math.round(total / days.length * 100) : 0;
+  if (!row || !h) return;
+  const { total, eligible, pct } = habitRowTotal(h, days);
   const cell = row.querySelector('.col-total');
-  if (cell) cell.innerHTML = `<div class="total-wrap"><div class="total-track"><div class="total-fill" style="width:${pct}%"></div></div><span class="total-num">${total}/${days.length}</span></div>`;
+  if (cell) cell.innerHTML = `<div class="total-wrap"><div class="total-track"><div class="total-fill" style="width:${pct}%"></div></div><span class="total-num">${total}/${eligible}</span></div>`;
 }
 
 function checkFullDay(ds) {
-  if (!habits.length) return;
-  if (habits.every(h => completions[`${h.id}_${ds}`])) {
+  const active = habits.filter(h => habitActiveOn(h, ds));
+  if (!active.length) return;
+  if (active.every(h => completions[`${h.id}_${ds}`])) {
     confetti({ particleCount:140, spread:80, origin:{ y:0.6 } });
     showToast('Perfect day! Every habit done!');
   }
@@ -832,11 +909,11 @@ function renderYearlyHeatmap() {
   d = new Date(jan1);
   while (d.getFullYear() === yr) {
     const ds = fmt(d);
-    const done = habits.filter(h => completions[`${h.id}_${ds}`]).length;
-    const pct = habits.length ? done / habits.length : 0;
+    const stats = dayCompletionStats(d);
+    const pct = stats.total ? stats.done / stats.total : 0;
     const cls = pct > 0.75 ? 'h4' : pct > 0.5 ? 'h3' : pct > 0.25 ? 'h2' : pct > 0 ? 'h1' : '';
     const style = ds > today() ? 'opacity:0.25' : '';
-    const tip = `${d.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})} - ${done}/${habits.length} habits`;
+    const tip = `${d.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})} - ${stats.done}/${stats.total} habits`;
     html += `<div class="hm-cell ${cls}" style="${style}" data-tip="${tip}" onmouseenter="showTip(event,this)" onmouseleave="hideTip()"></div>`;
     d = addDays(d, 1);
   }
@@ -869,6 +946,8 @@ window.openAdd = function() {
   editingId = null;
   document.getElementById('modal-title').textContent = 'Add New Habit';
   document.getElementById('habit-input').value = '';
+  document.getElementById('habit-start-row').style.display = '';
+  document.getElementById('habit-start-input').value = fmt(new Date());
   document.getElementById('habit-modal').classList.add('show');
   setTimeout(() => document.getElementById('habit-input').focus(), 80);
 };
@@ -879,6 +958,7 @@ window.openEdit = function(id) {
   if (!h) return;
   document.getElementById('modal-title').textContent = 'Rename Habit';
   document.getElementById('habit-input').value = h.name;
+  document.getElementById('habit-start-row').style.display = 'none';
   document.getElementById('habit-modal').classList.add('show');
   setTimeout(() => document.getElementById('habit-input').focus(), 80);
 };
@@ -889,7 +969,11 @@ window.confirmHabit = async function() {
   const name = document.getElementById('habit-input').value.trim();
   if (!name) return;
   if (editingId) { habits = habits.map(h => h.id === editingId ? {...h, name} : h); showToast('Habit renamed'); }
-  else { habits.push({ id: 'h' + Date.now(), name }); showToast('Habit added'); }
+  else {
+    const startVal = document.getElementById('habit-start-input').value;
+    habits.push({ id: 'h' + Date.now(), name, startDate: startVal || fmt(new Date()) });
+    showToast('Habit added');
+  }
   closeModal();
   await save();
 };
@@ -937,7 +1021,7 @@ window.obStart = async function() {
   if (!dateVal) return alert('Please pick a start date.');
   if (!obHabits.length) return alert('Add at least one habit.');
   await setDoc(doc(db, 'users', user.uid), {
-    habits: obHabits.map((name, i) => ({ id: 'h' + i, name })),
+    habits: obHabits.map((name, i) => ({ id: 'h' + i, name, startDate: dateVal })),
     completions: {}, startDate: dateVal, createdAt: serverTimestamp()
   });
   document.getElementById('onboard').classList.remove('show');
